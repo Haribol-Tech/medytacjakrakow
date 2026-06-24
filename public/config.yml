@@ -1,0 +1,16 @@
+local_backend: true
+
+backend:
+  name: git-gateway
+
+media_folder: public/uploads
+public_folder: /uploads
+
+collections:
+  - name: aktualnosci
+    label: Aktualności
+    folder: src/content/aktualnosci
+    create: true
+    fields:
+      - { name: title, label: Tytuł }
+      - { name: body, label: Treść, widget: markdown }

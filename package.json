@@ -7,11 +7,16 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "cms": "decap-server",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^7.0.2"
+    "astro": "^7.0.2",
+    "decap-cms-app": "^3.14.1"
+  },
+  "devDependencies": {
+    "decap-server": "^3.9.1"
   }
 }
