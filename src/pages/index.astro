@@ -7,24 +7,19 @@
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>Medytacja Kraków</title>
-    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   </head>
   <body>
     <h1>Medytacja Kraków</h1>
     <script>
-      if (window.netlifyIdentity) {
-        window.netlifyIdentity.on("init", user => {
-          if (!user) {
-            window.netlifyIdentity.on("login", () => {
-              document.location.href = "/admin/";
-            });
-          }
-        });
-        const hash = window.location.hash;
-        if (hash && (hash.includes('invite_token') || hash.includes('confirmation_token') || hash.includes('recovery_token'))) {
-          window.netlifyIdentity.open();
-        }
+      import NetlifyIdentity from 'netlify-identity-widget';
+      NetlifyIdentity.init();
+      const hash = window.location.hash;
+      if (hash && (hash.includes('invite_token') || hash.includes('confirmation_token') || hash.includes('recovery_token'))) {
+        NetlifyIdentity.open();
       }
+      NetlifyIdentity.on("login", () => {
+        document.location.href = "/admin/";
+      });
     </script>
   </body>
 </html>
