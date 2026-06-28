@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kalendarz zajęć — prototyp UI</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f8f7f4;
+  --surface: #ffffff;
+  --surface2: #f1f0ec;
+  --border: #e2e0da;
+  --border-strong: #c8c5bc;
+  --text: #1a1a18;
+  --text2: #5c5b57;
+  --text3: #9c9a95;
+  --accent: #185FA5;
+  --accent-bg: #E6F1FB;
+  --accent-text: #185FA5;
+  --pro: #534AB7;
+  --pro-bg: #EEEDFE;
+  --pro-text: #534AB7;
+  --success: #3B6D11;
+  --success-bg: #EAF3DE;
+  --danger: #A32D2D;
+  --danger-bg: #FCEBEB;
+  --warning-bg: #FAEEDA;
+  --warning-text: #854F0B;
+  --radius: 8px;
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 16px; min-height: 100vh; }
+
+/* LAYOUT */
+.app { max-width: 420px; margin: 0 auto; min-height: 100vh; background: var(--bg); }
+.top-bar { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+.top-bar h1 { font-size: 17px; font-weight: 600; }
+.view-toggle { display: flex; background: var(--surface2); border-radius: 8px; padding: 3px; gap: 2px; }
+.view-btn { font-size: 12px; padding: 5px 10px; border-radius: 6px; border: none; background: none; color: var(--text2); cursor: pointer; }
+.view-btn.active { background: var(--surface); color: var(--text); font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+/* SEKCJE WIDOKÓW */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ===== WIDOK 1: KROPKI ===== */
+.cal-nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 8px; }
+.cal-nav span { font-size: 15px; font-weight: 600; }
+.cal-nav button { width: 36px; height: 36px; border-radius: 50%; border: 0.5px solid var(--border); background: var(--surface); color: var(--text2); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.cal-nav button:hover { background: var(--surface2); }
+
+.dot-names { display: grid; grid-template-columns: repeat(7,1fr); padding: 0 8px; }
+.dot-names div { font-size: 11px; color: var(--text3); text-align: center; padding: 4px 0; }
+
+.dot-grid { display: grid; grid-template-columns: repeat(7,1fr); padding: 0 8px 4px; }
+.dc { display: flex; flex-direction: column; align-items: center; padding: 4px 2px; border-radius: 10px; cursor: pointer; min-height: 48px; justify-content: center; gap: 4px; transition: background 0.1s; -webkit-tap-highlight-color: transparent; }
+.dc:hover, .dc:active { background: var(--surface2); }
+.dc.selected { background: var(--accent-bg); }
+.dc.other-month .dn { opacity: 0.25; }
+.dn { font-size: 14px; color: var(--text2); width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+.dc.today .dn { background: var(--accent); color: #fff; font-weight: 600; }
+.dc.selected.today .dn { background: var(--accent); color: #fff; }
+.dots-row { display: flex; gap: 3px; justify-content: center; min-height: 6px; }
+.dot { width: 5px; height: 5px; border-radius: 50%; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 16px; border-top: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); background: var(--surface); }
+.legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text2); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+.day-panel { background: var(--surface); border-top: 0.5px solid var(--border); }
+.day-panel-title { font-size: 13px; color: var(--text3); padding: 12px 16px 8px; font-weight: 500; }
+.day-panel-events { padding: 0 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+
+/* ===== WIDOK 2: LISTA MIESIĘCZNA ===== */
+.list-nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 8px; }
+.list-nav span { font-size: 15px; font-weight: 600; }
+.list-nav button { width: 36px; height: 36px; border-radius: 50%; border: 0.5px solid var(--border); background: var(--surface); color: var(--text2); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.list-nav button:hover { background: var(--surface2); }
+.event-list { padding: 4px 12px 80px; display: flex; flex-direction: column; gap: 10px; }
+
+/* ===== KARTY ZAJĘĆ (wspólne) ===== */
+.event-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 14px; padding: 13px 14px; cursor: pointer; transition: border-color 0.15s; -webkit-tap-highlight-color: transparent; }
+.event-card:hover { border-color: var(--border-strong); }
+.event-card.cancelled { opacity: 0.55; }
+.ec-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.ec-date { font-size: 12px; color: var(--text3); white-space: nowrap; padding-top: 2px; }
+.badge { font-size: 11px; padding: 2px 9px; border-radius: 100px; display: inline-block; margin-bottom: 5px; }
+.badge.med { background: var(--accent-bg); color: var(--accent-text); }
+.badge.kirtan { background: var(--pro-bg); color: var(--pro-text); }
+.badge.relaks { background: var(--success-bg); color: var(--success); }
+.badge.cancelled-b { background: var(--danger-bg); color: var(--danger); }
+.ec-name { font-size: 15px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.ec-meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; color: var(--text3); margin-top: 5px; }
+.ec-meta span { display: flex; align-items: center; gap: 3px; }
+.ec-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 11px; padding-top: 11px; border-top: 0.5px solid var(--border); }
+.slots-text { font-size: 12px; color: var(--text2); }
+.slots-text strong { color: var(--text); }
+.btn-zap { font-size: 13px; font-weight: 500; padding: 7px 16px; border-radius: var(--radius); background: var(--accent); color: #fff; border: none; cursor: pointer; }
+.btn-zap:hover { opacity: 0.9; }
+.btn-rez { font-size: 13px; padding: 7px 16px; border-radius: var(--radius); background: var(--surface2); color: var(--text2); border: 0.5px solid var(--border); cursor: pointer; }
+.cancelled-label { font-size: 12px; color: var(--danger); font-weight: 500; }
+
+/* MINI KARTA (w widoku kropek) */
+.mini-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 11px 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.mini-card:hover { border-color: var(--border-strong); }
+.mini-card.cancelled { opacity: 0.5; }
+.mc-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.mc-info { flex: 1; min-width: 0; }
+.mc-name { font-size: 14px; font-weight: 500; color: var(--text); }
+.mc-time { font-size: 12px; color: var(--text3); margin-top: 1px; }
+.mc-cancelled { font-size: 11px; color: var(--danger); }
+.mc-btn { font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: var(--radius); background: var(--accent); color: #fff; border: none; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+.mc-btn.rez { background: var(--surface2); color: var(--text2); border: 0.5px solid var(--border); }
+
+/* ===== MODAL ===== */
+.modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: flex-end; justify-content: center; }
+.modal-backdrop.open { display: flex; }
+.modal { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-width: 480px; padding: 0 0 env(safe-area-inset-bottom,16px); max-height: 90vh; overflow-y: auto; }
+.modal-handle { width: 36px; height: 4px; background: var(--border-strong); border-radius: 2px; margin: 12px auto 16px; }
+.modal-inner { padding: 0 20px 24px; }
+.modal-title { font-size: 19px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.modal-sub { font-size: 14px; color: var(--text3); margin-bottom: 14px; }
+.modal-info-box { background: var(--surface2); border-radius: 10px; padding: 11px 13px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 6px; }
+.mib-row { font-size: 13px; color: var(--text2); display: flex; align-items: center; gap: 7px; }
+.mib-row svg { flex-shrink: 0; color: var(--text3); }
+.slots-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.slot-box { background: var(--surface2); border-radius: 10px; padding: 10px 12px; text-align: center; }
+.slot-n { font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; }
+.slot-l { font-size: 11px; color: var(--text3); margin-top: 3px; }
+.rez-note { background: var(--warning-bg); color: var(--warning-text); font-size: 12px; padding: 9px 12px; border-radius: 10px; margin-bottom: 14px; line-height: 1.5; }
+.form-row { margin-bottom: 11px; }
+.form-row label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 4px; font-weight: 500; }
+.form-row input, .form-row select, .form-row textarea {
+  width: 100%; padding: 10px 12px; border-radius: var(--radius);
+  border: 0.5px solid var(--border); background: var(--surface);
+  font-size: 14px; color: var(--text); font-family: inherit;
+  -webkit-appearance: none; appearance: none;
+}
+.form-row input:focus, .form-row select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+.form-check { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.form-check input[type=checkbox] { width: 18px; height: 18px; margin-top: 1px; flex-shrink: 0; accent-color: var(--accent); }
+.form-check label { font-size: 12px; color: var(--text2); line-height: 1.5; }
+.modal-btns { display: flex; gap: 8px; margin-top: 16px; }
+.modal-btns button { flex: 1; padding: 13px; border-radius: 12px; font-size: 15px; font-weight: 500; cursor: pointer; }
+.btn-cancel { background: var(--surface2); border: none; color: var(--text2); }
+.btn-submit { background: var(--accent); border: none; color: #fff; }
+.btn-submit:hover { opacity: 0.9; }
+
+.empty-day { font-size: 14px; color: var(--text3); padding: 16px 0; text-align: center; }
+
+/* IKONY SVG inline */
+.ico { display: inline-block; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="top-bar">
+    <h1>Grafik zajęć</h1>
+    <div class="view-toggle">
+      <button class="view-btn active" onclick="setView('dots')">Kalendarz</button>
+      <button class="view-btn" onclick="setView('list')">Lista</button>
+    </div>
+  </div>
+
+  <!-- ===== WIDOK KROPKI ===== -->
+  <div id="v-dots" class="view active">
+    <div class="cal-nav">
+      <button onclick="prevMonth()" aria-label="Poprzedni miesiąc">‹</button>
+      <span id="dots-month-label"></span>
+      <button onclick="nextMonth()" aria-label="Następny miesiąc">›</button>
+    </div>
+    <div class="dot-names">
+      <div>Pn</div><div>Wt</div><div>Śr</div><div>Czw</div><div>Pt</div><div>Sb</div><div>Nd</div>
+    </div>
+    <div class="dot-grid" id="dot-grid"></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#378ADD"></div>Medytacja</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#534AB7"></div>Kirtan</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#3B6D11"></div>Relaks</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#A32D2D"></div>Odwołane</div>
+    </div>
+    <div class="day-panel">
+      <div class="day-panel-title" id="dots-day-label">Wybierz dzień</div>
+      <div class="day-panel-events" id="dots-events"></div>
+    </div>
+  </div>
+
+  <!-- ===== WIDOK LISTA ===== -->
+  <div id="v-list" class="view">
+    <div class="list-nav">
+      <button onclick="prevMonth()" aria-label="Poprzedni miesiąc">‹</button>
+      <span id="list-month-label"></span>
+      <button onclick="nextMonth()" aria-label="Następny miesiąc">›</button>
+    </div>
+    <div class="event-list" id="event-list"></div>
+  </div>
+
+</div>
+
+<!-- ===== MODAL ZAPISU ===== -->
+<div class="modal-backdrop" id="modal" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-inner" id="modal-inner"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DANE ZAJĘĆ (prototyp)
+// ============================================================
+var ZAJECIA = [
+  { id:1, typ:'med', nazwa:'Medytacja od podstaw', kolor:'#378ADD', tlo:'#E6F1FB', tkst:'#185FA5' },
+  { id:2, typ:'kirtan', nazwa:'Kirtan Medytacja', kolor:'#534AB7', tlo:'#EEEDFE', tkst:'#534AB7' },
+  { id:3, typ:'relaks', nazwa:'Relaks i Medytacja', kolor:'#3B6D11', tlo:'#EAF3DE', tkst:'#3B6D11' },
+];
+
+// Daty: YYYY-MM-DD
+var TERMINY = [
+  { zajId:1, data:'2026-07-01', godz:'18:00', kon:'19:00', wolne:4, limit:12, rez:0, rezLimit:3, prowadzacy:null, odwolane:false },
+  { zajId:2, data:'2026-07-02', godz:'18:00', kon:'19:30', wolne:6, limit:15, rez:0, rezLimit:5, prowadzacy:'Acyuta Das', odwolane:false },
+  { zajId:3, data:'2026-07-04', godz:'17:00', kon:'18:00', wolne:0, limit:10, rez:0, rezLimit:3, prowadzacy:null, odwolane:true, powodOdwolania:'urlop prowadzącego' },
+  { zajId:2, data:'2026-07-05', godz:'16:00', kon:'17:30', wolne:8, limit:15, rez:0, rezLimit:5, prowadzacy:'Acyuta Das', odwolane:false },
+  { zajId:1, data:'2026-07-08', godz:'18:00', kon:'19:00', wolne:2, limit:12, rez:1, rezLimit:3, prowadzacy:null, odwolane:false },
+  { zajId:2, data:'2026-07-09', godz:'18:00', kon:'19:30', wolne:0, limit:15, rez:2, rezLimit:5, prowadzacy:'Acyuta Das', odwolane:false },
+  { zajId:2, data:'2026-07-12', godz:'16:00', kon:'17:30', wolne:10, limit:15, rez:0, rezLimit:5, prowadzacy:'Acyuta Das', odwolane:false },
+  { zajId:3, data:'2026-07-13', godz:'17:00', kon:'18:00', wolne:5, limit:10, rez:0, rezLimit:3, prowadzacy:null, odwolane:false },
+  { zajId:1, data:'2026-07-15', godz:'18:00', kon:'19:00', wolne:8, limit:12, rez:0, rezLimit:3, prowadzacy:null, odwolane:false },
+  { zajId:2, data:'2026-07-16', godz:'18:00', kon:'19:30', wolne:5, limit:15, rez:0, rezLimit:5, prowadzacy:'Acyuta Das', odwolane:false },
+  { zajId:2, data:'2026-07-19', godz:'16:00', kon:'17:30', wolne:12, limit:15, rez:0, rezLimit:5, prowadzacy:'Acyuta Das', odwolane:false },
+  { zajId:1, data:'2026-07-22', godz:'18:00', kon:'19:00', wolne:9, limit:12, rez:0, rezLimit:3, prowadzacy:null, odwolane:false },
+  { zajId:2, data:'2026-07-23', godz:'18:00', kon:'19:30', wolne:7, limit:15, rez:0, rezLimit:5, prowadzacy:'Acyuta Das', odwolane:false },
+  { zajId:3, data:'2026-07-25', godz:'17:00', kon:'18:00', wolne:4, limit:10, rez:0, rezLimit:3, prowadzacy:null, odwolane:false },
+  { zajId:2, data:'2026-07-26', godz:'16:00', kon:'17:30', wolne:11, limit:15, rez:0, rezLimit:5, prowadzacy:'Acyuta Das', odwolane:false },
+  { zajId:1, data:'2026-07-29', godz:'18:00', kon:'19:00', wolne:6, limit:12, rez:0, rezLimit:3, prowadzacy:null, odwolane:false },
+  { zajId:2, data:'2026-07-30', godz:'18:00', kon:'19:30', wolne:3, limit:15, rez:0, rezLimit:5, prowadzacy:'Acyuta Das', odwolane:false },
+  // Sierpień
+  { zajId:1, data:'2026-08-05', godz:'18:00', kon:'19:00', wolne:10, limit:12, rez:0, rezLimit:3, prowadzacy:null, odwolane:false },
+  { zajId:2, data:'2026-08-06', godz:'18:00', kon:'19:30', wolne:8, limit:15, rez:0, rezLimit:5, prowadzacy:'Acyuta Das', odwolane:false },
+  { zajId:2, data:'2026-08-09', godz:'16:00', kon:'17:30', wolne:14, limit:15, rez:0, rezLimit:5, prowadzacy:'Acyuta Das', odwolane:false },
+  { zajId:1, data:'2026-08-12', godz:'18:00', kon:'19:00', wolne:5, limit:12, rez:0, rezLimit:3, prowadzacy:null, odwolane:false },
+  { zajId:3, data:'2026-08-14', godz:'17:00', kon:'18:00', wolne:0, limit:10, rez:3, rezLimit:5, prowadzacy:null, odwolane:false },
+  { zajId:2, data:'2026-08-20', godz:'18:00', kon:'19:30', wolne:0, limit:15, rez:0, rezLimit:5, prowadzacy:'Acyuta Das', odwolane:true, powodOdwolania:'przerwa letnia' },
+];
+
+var currentYear = 2026;
+var currentMonth = 6; // 0-based: 6 = lipiec
+var selectedDate = null;
+var currentView = 'dots';
+
+var MIESIACE = ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
+var DNI = ['Pn','Wt','Śr','Czw','Pt','Sb','Nd'];
+
+function getZaj(id) { return ZAJECIA.find(function(z){ return z.id === id; }); }
+
+function terminyNaDzien(dateStr) {
+  return TERMINY.filter(function(t){ return t.data === dateStr; });
+}
+
+function terminyNaMiesiac(year, month) {
+  var prefix = year + '-' + String(month+1).padStart(2,'0');
+  return TERMINY.filter(function(t){ return t.data.startsWith(prefix); });
+}
+
+function formatDate(dateStr) {
+  var d = new Date(dateStr + 'T12:00:00');
+  var dn = ['Niedziela','Poniedziałek','Wtorek','Środa','Czwartek','Piątek','Sobota'];
+  return dn[d.getDay()] + ', ' + d.getDate() + ' ' + MIESIACE[d.getMonth()].toLowerCase();
+}
+
+function isToday(dateStr) {
+  var t = new Date();
+  var td = t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
+  return dateStr === td;
+}
+
+function prevMonth() {
+  currentMonth--;
+  if(currentMonth < 0){ currentMonth = 11; currentYear--; }
+  selectedDate = null;
+  render();
+}
+function nextMonth() {
+  currentMonth++;
+  if(currentMonth > 11){ currentMonth = 0; currentYear++; }
+  selectedDate = null;
+  render();
+}
+
+function setView(v) {
+  currentView = v;
+  document.querySelectorAll('.view-btn').forEach(function(b,i){
+    b.classList.toggle('active', (i===0&&v==='dots')||(i===1&&v==='list'));
+  });
+  document.getElementById('v-dots').classList.toggle('active', v==='dots');
+  document.getElementById('v-list').classList.toggle('active', v==='list');
+  render();
+}
+
+// ============================================================
+// RENDER WIDOK KROPKI
+// ============================================================
+function renderDots() {
+  document.getElementById('dots-month-label').textContent = MIESIACE[currentMonth] + ' ' + currentYear;
+
+  var grid = document.getElementById('dot-grid');
+  grid.innerHTML = '';
+
+  var firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  firstDay = (firstDay + 6) % 7; // Pn=0
+  var daysInMonth = new Date(currentYear, currentMonth+1, 0).getDate();
+  var daysInPrev = new Date(currentYear, currentMonth, 0).getDate();
+
+  // Poprzedni miesiąc
+  for(var i = firstDay - 1; i >= 0; i--) {
+    var day = daysInPrev - i;
+    var el = document.createElement('div');
+    el.className = 'dc other-month';
+    el.innerHTML = '<div class="dn">' + day + '</div>';
+    grid.appendChild(el);
+  }
+
+  // Bieżący miesiąc
+  for(var d = 1; d <= daysInMonth; d++) {
+    var dateStr = currentYear + '-' + String(currentMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    var terminy = terminyNaDzien(dateStr);
+    var cls = 'dc';
+    if(isToday(dateStr)) cls += ' today';
+    if(selectedDate === dateStr) cls += ' selected';
+
+    var dotsHtml = '';
+    if(terminy.length > 0) {
+      dotsHtml = '<div class="dots-row">';
+      terminy.slice(0,3).forEach(function(t){
+        if(t.odwolane) {
+          dotsHtml += '<div class="dot" style="background:#A32D2D"></div>';
+        } else {
+          var z = getZaj(t.zajId);
+          dotsHtml += '<div class="dot" style="background:' + z.kolor + '"></div>';
+        }
+      });
+      dotsHtml += '</div>';
+    }
+
+    var el = document.createElement('div');
+    el.className = cls;
+    el.setAttribute('data-date', dateStr);
+    el.setAttribute('role', 'button');
+    el.setAttribute('aria-label', d + ' ' + MIESIACE[currentMonth]);
+    el.innerHTML = '<div class="dn">' + d + '</div>' + dotsHtml;
+    el.addEventListener('click', function(){ selectDay(this.getAttribute('data-date')); });
+    grid.appendChild(el);
+  }
+
+  // Następny miesiąc — dopełnienie
+  var total = firstDay + daysInMonth;
+  var remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
+  for(var n = 1; n <= remaining; n++) {
+    var el = document.createElement('div');
+    el.className = 'dc other-month';
+    el.innerHTML = '<div class="dn">' + n + '</div>';
+    grid.appendChild(el);
+  }
+
+  renderDayPanel();
+}
+
+function selectDay(dateStr) {
+  selectedDate = dateStr;
+  document.querySelectorAll('.dc').forEach(function(el){
+    var d = el.getAttribute('data-date');
+    var hasSel = selectedDate && d === selectedDate;
+    el.classList.toggle('selected', hasSel);
+  });
+  renderDayPanel();
+  // Scroll do panelu
+  setTimeout(function(){
+    document.getElementById('day-panel') && document.querySelector('.day-panel').scrollIntoView({behavior:'smooth', block:'nearest'});
+  }, 50);
+}
+
+function renderDayPanel() {
+  var label = document.getElementById('dots-day-label');
+  var eventsEl = document.getElementById('dots-events');
+
+  if(!selectedDate) {
+    label.textContent = 'Wybierz dzień';
+    eventsEl.innerHTML = '';
+    return;
+  }
+
+  label.textContent = formatDate(selectedDate);
+  var terminy = terminyNaDzien(selectedDate);
+
+  if(terminy.length === 0) {
+    eventsEl.innerHTML = '<div class="empty-day">Brak zajęć w tym dniu.</div>';
+    return;
+  }
+
+  eventsEl.innerHTML = '';
+  terminy.forEach(function(t){
+    var z = getZaj(t.zajId);
+    var el = document.createElement('div');
+    el.className = 'mini-card' + (t.odwolane ? ' cancelled' : '');
+
+    var btnHtml = '';
+    if(!t.odwolane) {
+      if(t.wolne > 0) {
+        btnHtml = '<button class="mc-btn" onclick="openModal(' + JSON.stringify(t) + ')">Zapisz</button>';
+      } else if(t.rez < t.rezLimit) {
+        btnHtml = '<button class="mc-btn rez" onclick="openModal(' + JSON.stringify(t) + ',true)">Rezerwowa</button>';
+      } else {
+        btnHtml = '<span style="font-size:11px;color:#A32D2D">Brak miejsc</span>';
+      }
+    }
+
+    var metaHtml = '<div class="mc-time">' + t.godz + '–' + t.kon;
+    if(t.prowadzacy) metaHtml += ' · ' + t.prowadzacy;
+    if(!t.odwolane) {
+      metaHtml += ' · ' + t.wolne + ' wolnych';
+    }
+    metaHtml += '</div>';
+
+    if(t.odwolane) {
+      metaHtml += '<div class="mc-cancelled">Odwołane' + (t.powodOdwolania ? ' — ' + t.powodOdwolania : '') + '</div>';
+    }
+
+    el.innerHTML = '<div class="mc-dot" style="background:' + (t.odwolane ? '#A32D2D' : z.kolor) + '"></div>' +
+      '<div class="mc-info"><div class="mc-name">' + z.nazwa + '</div>' + metaHtml + '</div>' + btnHtml;
+    eventsEl.appendChild(el);
+  });
+}
+
+// ============================================================
+// RENDER WIDOK LISTA
+// ============================================================
+function renderList() {
+  document.getElementById('list-month-label').textContent = MIESIACE[currentMonth] + ' ' + currentYear;
+
+  var listEl = document.getElementById('event-list');
+  listEl.innerHTML = '';
+
+  var terminy = terminyNaMiesiac(currentYear, currentMonth);
+  terminy.sort(function(a,b){ return a.data.localeCompare(b.data) || a.godz.localeCompare(b.godz); });
+
+  if(terminy.length === 0) {
+    listEl.innerHTML = '<div class="empty-day">Brak zajęć w tym miesiącu.</div>';
+    return;
+  }
+
+  terminy.forEach(function(t){
+    var z = getZaj(t.zajId);
+    var el = document.createElement('div');
+    el.className = 'event-card' + (t.odwolane ? ' cancelled' : '');
+
+    var badgeCls = t.odwolane ? 'cancelled-b' : t.zajId === 1 ? 'med' : t.zajId === 2 ? 'kirtan' : 'relaks';
+
+    var footerHtml = '';
+    if(t.odwolane) {
+      footerHtml = '<div class="cancelled-label">&#10006; Odwołane' + (t.powodOdwolania ? ' — ' + t.powodOdwolania : '') + '</div><span></span>';
+    } else if(t.wolne > 0) {
+      footerHtml = '<div class="slots-text">Wolne: <strong>' + t.wolne + '</strong> / ' + t.limit + '</div>' +
+        '<button class="btn-zap" onclick="openModal(' + JSON.stringify(t) + ')">Zapisz się</button>';
+    } else if(t.rez < t.rezLimit) {
+      footerHtml = '<div class="slots-text">Brak miejsc · Rezerwowe: <strong>' + t.rez + '</strong> / ' + t.rezLimit + '</div>' +
+        '<button class="btn-rez" onclick="openModal(' + JSON.stringify(t) + ',true)">Lista rezerwowa</button>';
+    } else {
+      footerHtml = '<div class="slots-text">Brak miejsc</div><span style="font-size:12px;color:#A32D2D">Zapisy zamknięte</span>';
+    }
+
+    var metaHtml = '<div class="ec-meta">' +
+      '<span>&#128344; ' + t.godz + '–' + t.kon + '</span>' +
+      '<span>&#128205; ul. Starowiślna 20/5</span>' +
+      (t.prowadzacy ? '<span>&#128100; ' + t.prowadzacy + '</span>' : '') +
+      '</div>';
+
+    el.innerHTML = '<div class="ec-top">' +
+        '<div><div class="badge ' + badgeCls + '">' + (t.odwolane ? 'Odwołane' : z.nazwa.split(' ')[0]) + '</div>' +
+        '<div class="ec-name">' + z.nazwa + '</div></div>' +
+        '<div class="ec-date">' + formatDate(t.data).split(', ')[0] + ', ' + new Date(t.data+'T12:00:00').getDate() + ' ' + MIESIACE[currentMonth].substring(0,3).toLowerCase() + '.</div>' +
+      '</div>' +
+      metaHtml +
+      '<div class="ec-footer">' + footerHtml + '</div>';
+    listEl.appendChild(el);
+  });
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openModal(t, rezerwowa) {
+  if(typeof t === 'string') t = JSON.parse(t);
+  var z = getZaj(t.zajId);
+
+  var rezNote = rezerwowa ? '<div class="rez-note">&#9432; Zapisy podstawowe są pełne. Wpisujesz się na <strong>listę rezerwową</strong> — miejsce nie jest gwarantowane. Poinformujemy Cię mailowo przed zajęciami.</div>' : '';
+
+  var slotsHtml = '<div class="slots-grid">' +
+    '<div class="slot-box"><div class="slot-n">' + (rezerwowa ? t.rez : t.wolne) + '</div><div class="slot-l">' + (rezerwowa ? 'Zajętych rezerwowych' : 'Wolnych miejsc') + '</div></div>' +
+    '<div class="slot-box"><div class="slot-n">' + (rezerwowa ? t.rezLimit : t.limit) + '</div><div class="slot-l">' + (rezerwowa ? 'Limit rezerwowych' : 'Łącznie miejsc') + '</div></div>' +
+  '</div>';
+
+  document.getElementById('modal-inner').innerHTML =
+    '<div class="modal-title">' + z.nazwa + '</div>' +
+    '<div class="modal-sub">' + formatDate(t.data) + '</div>' +
+    '<div class="modal-info-box">' +
+      '<div class="mib-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ' + t.godz + '–' + t.kon + '</div>' +
+      '<div class="mib-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg> ul. Starowiślna 20/5, Kraków</div>' +
+      (t.prowadzacy ? '<div class="mib-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ' + t.prowadzacy + '</div>' : '') +
+    '</div>' +
+    rezNote +
+    slotsHtml +
+    '<div class="form-row"><label>Imię *</label><input type="text" placeholder="np. Zofia"></div>' +
+    '<div class="form-row"><label>Adres e-mail *</label><input type="email" placeholder="zofia@przykład.pl"></div>' +
+    '<div class="form-row"><label>Telefon (opcjonalnie)</label><input type="tel" placeholder="500 000 000"></div>' +
+    '<div class="form-row"><label>Czy byłeś/-aś już w SDJ?</label><select><option>Nie, będę pierwszy raz</option><option>Tak, byłam/byłem już</option></select></div>' +
+    '<div class="form-row"><label>Uwagi (opcjonalnie)</label><textarea rows="2" placeholder="np. przyjdę ze znajomymi" style="resize:none"></textarea></div>' +
+    '<div class="form-check"><input type="checkbox" id="chk-nl"><label for="chk-nl">Chcę zapisać się do newslettera — bieżące informacje o zajęciach i wydarzeniach (opcjonalnie)</label></div>' +
+    '<div class="form-check"><input type="checkbox" id="chk-rodo"><label for="chk-rodo"><strong>Wyrażam zgodę na przetwarzanie moich danych osobowych</strong> przez Stowarzyszenie Studio Dźwięku Jogi w Krakowie, ul. Starowiślna 20/5, info@medytacjakrakow.pl *</label></div>' +
+    '<div class="modal-btns">' +
+      '<button class="btn-cancel" onclick="closeModal()">Anuluj</button>' +
+      '<button class="btn-submit">' + (rezerwowa ? 'Wpisz na listę rezerwową' : 'Wyślij zgłoszenie') + '</button>' +
+    '</div>';
+
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(e) {
+  if(!e || e.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
+
+// ============================================================
+// GŁÓWNY RENDER
+// ============================================================
+function render() {
+  if(currentView === 'dots') {
+    renderDots();
+  } else {
+    renderList();
+  }
+}
+
+// Ustaw domyślnie wybrany dzień na dzisiaj jeśli to lipiec 2026
+selectedDate = '2026-07-08';
+render();
+</script>
+</body>
+</html>
