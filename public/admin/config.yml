@@ -7,8 +7,22 @@ public_folder: /uploads
 collections:
   - name: aktualnosci
     label: Aktualności
+    label_singular: Wpis
     folder: src/content/aktualnosci
     create: true
+    slug: "{{slug}}"
     fields:
-      - { name: title, label: Tytuł }
+      - { name: title, label: Tytuł, widget: string }
+      - { name: date, label: Data publikacji, widget: datetime, date_format: YYYY-MM-DD, time_format: false }
+      - { name: excerpt, label: Skrót (opcjonalnie), widget: string, required: false }
+      - name: kategoria
+        label: Kategoria
+        widget: select
+        required: false
+        options:
+          - { label: Medytacja, value: medytacja }
+          - { label: Zajęcia stacjonarne, value: zajecia-stacjonarne }
+          - { label: Relaks, value: relaks }
+          - { label: Kirtan, value: kirtan }
+      - { name: image, label: Zdjęcie (opcjonalnie), widget: image, required: false }
       - { name: body, label: Treść, widget: markdown }

@@ -1,0 +1,72 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const wpisy = await getCollection('aktualnosci');
+  return wpisy.map((wpis) => ({
+    params: { slug: wpis.id },
+    props: { wpis },
+  }));
+}
+
+const { wpis } = Astro.props;
+const { Content } = await render(wpis);
+
+const dataFormatted = wpis.data.date.toLocaleDateString('pl-PL', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<PageLayout
+  title={`${wpis.data.title} — Medytacja Kraków`}
+  description={wpis.data.excerpt}
+  pageTitle={wpis.data.title}
+  breadcrumb={wpis.data.title}
+>
+
+  <div class="blog-single-section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8">
+          <article class="single-post">
+
+            {wpis.data.image && (
+              <div class="post-featured-image mb-4">
+                <figure class="image-anime">
+                  <img src={wpis.data.image} alt={wpis.data.title}>
+                </figure>
+              </div>
+            )}
+
+            <div class="post-meta mb-3">
+              <span class="post-date">
+                <i class="fa-regular fa-calendar"></i> {dataFormatted}
+              </span>
+            </div>
+
+            <div class="post-content">
+              <Content />
+            </div>
+
+          </article>
+        </div>
+
+        <div class="col-lg-4">
+          <aside class="blog-sidebar">
+            <div class="sidebar-widget">
+              <h3>Kontakt</h3>
+              <ul class="sidebar-contact-list">
+                <li><i class="fa-solid fa-phone"></i> <a href="tel:575432607">575 432 607</a></li>
+                <li><i class="fa-solid fa-envelope"></i> <a href="mailto:info@medytacjakrakow.pl">info@medytacjakrakow.pl</a></li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</PageLayout>

@@ -1,25 +1,114 @@
 ---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import NetlifyIdentity from 'netlify-identity-widget';
+
+// Obsługa tokenów Netlify Identity (zaproszenia, reset hasła itp.)
+// Skrypt po stronie klienta — patrz <script> na dole
+
+const wpisy = await getCollection('aktualnosci');
+const posortowane = wpisy.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 ---
-<html lang="pl">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
-    <title>Medytacja Kraków</title>
-  </head>
-  <body>
-    <h1>Medytacja Kraków</h1>
-    <script>
-      import NetlifyIdentity from 'netlify-identity-widget';
-      NetlifyIdentity.init();
-      const hash = window.location.hash;
-      if (hash && (hash.includes('invite_token') || hash.includes('confirmation_token') || hash.includes('recovery_token'))) {
-        NetlifyIdentity.open();
-      }
-      NetlifyIdentity.on("login", () => {
-        document.location.href = "/admin/";
-      });
-    </script>
-  </body>
-</html>
+
+<BaseLayout title="Medytacja Kraków — Aktualności">
+
+  <!-- Hero Section -->
+  <div class="hero parallaxie" style="background-image: url('/images/hero-bg.jpg');">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-6">
+          <div class="hero-content">
+            <div class="section-title">
+              <h3 class="wow fadeInUp">Studio Dźwięku Jogi</h3>
+              <h1 class="text-anime-style-2">Medytacja i joga w sercu Krakowa</h1>
+              <p class="wow fadeInUp" data-wow-delay="0.2s">
+                Odkryj praktyki, które pomagają odnaleźć wewnętrzny spokój, wzmocnić ciało i wyciszyć umysł. Zapraszamy do naszego studia na ul. Starowiślnej.
+              </p>
+            </div>
+            <div class="hero-body wow fadeInUp" data-wow-delay="0.4s">
+              <div class="hero-btn">
+                <a href="/kalendarz/" class="btn-default">Zobacz grafik zajęć</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="down-arrow-circle">
+      <a href="#aktualnosci"><img src="/images/down-circle.svg" alt=""><i class="fa-solid fa-arrow-down"></i></a>
+    </div>
+  </div>
+
+  <!-- Aktualności Section -->
+  <div class="our-blog" id="aktualnosci">
+    <div class="container">
+      <div class="row section-row align-items-center">
+        <div class="col-lg-12">
+          <div class="section-title">
+            <h3 class="wow fadeInUp">Co słychać</h3>
+            <h2 class="text-anime-style-2">Aktualności</h2>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        {posortowane.map((wpis, i) => (
+          <div class="col-lg-4 col-md-6">
+            <div class="post-item wow fadeInUp" data-wow-delay={`${i * 0.2}s`}>
+              {wpis.data.image && (
+                <div class="post-featured-image">
+                  <a href={`/${wpis.slug}/`}>
+                    <figure class="image-anime">
+                      <img src={wpis.data.image} alt={wpis.data.title}>
+                    </figure>
+                  </a>
+                </div>
+              )}
+              <div class="post-item-body">
+                <div class="post-item-content">
+                  <h2><a href={`/${wpis.slug}/`}>{wpis.data.title}</a></h2>
+                  {wpis.data.excerpt && <p>{wpis.data.excerpt}</p>}
+                </div>
+                <div class="post-item-btn">
+                  <a href={`/${wpis.slug}/`} class="readmore-btn">czytaj dalej</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Sekcja zajęć / CTA -->
+  <div class="cta-box">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-9">
+          <div class="section-title">
+            <h2 class="text-anime-style-2">Dołącz do naszych zajęć medytacji i jogi w Krakowie</h2>
+          </div>
+        </div>
+        <div class="col-lg-3">
+          <div class="section-btn wow fadeInUp">
+            <a href="/medytacja-krakow/" class="btn-default btn-highlighted">Nasze zajęcia</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</BaseLayout>
+
+<script>
+  import NetlifyIdentity from 'netlify-identity-widget';
+  NetlifyIdentity.init();
+  const hash = window.location.hash;
+  if (hash && (hash.includes('invite_token') || hash.includes('confirmation_token') || hash.includes('recovery_token'))) {
+    NetlifyIdentity.open();
+  }
+  NetlifyIdentity.on('login', () => {
+    document.location.href = '/admin/';
+  });
+</script>

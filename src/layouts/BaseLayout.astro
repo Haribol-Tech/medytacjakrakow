@@ -1,0 +1,214 @@
+---
+export interface Props {
+  title?: string;
+  description?: string;
+  bodyClass?: string;
+}
+
+const {
+  title = 'Medytacja Kraków — Studio Dźwięku Jogi',
+  description = 'Zajęcia medytacji i jogi w Krakowie. Medytacja od podstaw, kirtan, relaks i redukcja stresu.',
+  bodyClass = '',
+} = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="description" content={description}>
+  <meta name="author" content="Studio Dźwięku Jogi">
+  <title>{title}</title>
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Sora:wght@100..800&display=swap" rel="stylesheet">
+
+  <!-- Arkusze CSS szablonu Restraint -->
+  <link href="/css/bootstrap.min.css" rel="stylesheet" media="screen">
+  <link href="/css/slicknav.min.css" rel="stylesheet">
+  <link href="/css/swiper-bundle.min.css" rel="stylesheet">
+  <link href="/css/all.min.css" rel="stylesheet" media="screen">
+  <link href="/css/animate.css" rel="stylesheet">
+  <link href="/css/magnific-popup.css" rel="stylesheet">
+  <link href="/css/mousecursor.css" rel="stylesheet">
+  <link href="/css/custom.css" rel="stylesheet" media="screen">
+</head>
+<body class={bodyClass}>
+
+  <!-- Preloader -->
+  <div class="preloader">
+    <div class="loading-container">
+      <div class="loading"></div>
+      <div id="loading-icon"><img src="/images/loader.svg" alt=""></div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="main-header active-sticky-header">
+    <div class="header-sticky">
+      <nav class="navbar navbar-expand-lg">
+        <div class="container">
+
+          <a class="navbar-brand" href="/">
+            <img src="/images/logo.svg" alt="Studio Dźwięku Jogi">
+          </a>
+
+          <div class="collapse navbar-collapse main-menu">
+            <div class="nav-menu-wrapper">
+              <ul class="navbar-nav mr-auto" id="menu">
+                <li class="nav-item"><a class="nav-link" href="/">Aktualności</a></li>
+                <li class="nav-item submenu"><a class="nav-link" href="/o-nas/">O nas</a>
+                  <ul>
+                    <li class="nav-item"><a class="nav-link" href="/o-nas/">O nas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/stowarzyszenie-studio-dzwieku-jogi/">Stowarzyszenie</a></li>
+                  </ul>
+                </li>
+                <li class="nav-item submenu"><a class="nav-link" href="/medytacja-krakow/">Zajęcia</a>
+                  <ul>
+                    <li class="nav-item"><a class="nav-link" href="/medytacja-krakow/">Wszystkie zajęcia</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/techniki-medytacji/">Techniki medytacji</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/pomocne-informacje/">Pomocne informacje</a></li>
+                  </ul>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="/kalendarz/">Grafik</a></li>
+                <li class="nav-item"><a class="nav-link" href="/kontakt/">Kontakt</a></li>
+              </ul>
+            </div>
+
+            <div class="header-contact-btn">
+              <a href="tel:575432607" class="header-contact-now">
+                <i class="fa-solid fa-phone-volume"></i>575 432 607
+              </a>
+            </div>
+          </div>
+
+          <div class="navbar-toggle"></div>
+        </div>
+      </nav>
+      <div class="responsive-menu"></div>
+    </div>
+  </header>
+
+  <!-- Treść strony -->
+  <slot />
+
+  <!-- Footer -->
+  <footer class="footer-main">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="footer-header">
+            <div class="footer-about">
+              <div class="footer-logo">
+                <img src="/images/footer-logo.svg" alt="Studio Dźwięku Jogi">
+              </div>
+              <div class="about-footer-content">
+                <p>Przestrzeń wewnętrznego spokoju, skupienia i dobrostanu.</p>
+              </div>
+            </div>
+            <div class="footer-social-links">
+              <ul>
+                <li><a href="https://facebook.com/MedytacjaKrakow" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a></li>
+                <li><a href="https://instagram.com/medytacjakrakow" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a></li>
+                <li><a href="https://youtube.com/channel/UCk4haqrVHgvwtc2oADK_oww" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-2 col-md-3">
+          <div class="footer-links">
+            <h3>Nawigacja</h3>
+            <ul>
+              <li><a href="/">Aktualności</a></li>
+              <li><a href="/o-nas/">O nas</a></li>
+              <li><a href="/medytacja-krakow/">Zajęcia</a></li>
+              <li><a href="/kalendarz/">Grafik</a></li>
+              <li><a href="/kontakt/">Kontakt</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-lg-2 col-md-4">
+          <div class="footer-links">
+            <h3>Zajęcia w Krakowie</h3>
+            <ul>
+              <li><a href="/medytacja-od-podstaw/">Medytacja od podstaw</a></li>
+              <li><a href="/joga-dla-kazdego/">Joga dla każdego</a></li>
+              <li><a href="/medytacja-kirtan/">Kirtan Medytacja</a></li>
+              <li><a href="/relaks-i-medytacja/">Relaks i Medytacja</a></li>
+              <li><a href="/warsztaty-redukcji-stresu/">Warsztaty Redukcji Stresu</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-5">
+          <div class="footer-links footer-contact-links">
+            <h3>Kontakt</h3>
+            <ul>
+              <li><a href="tel:575432607">575 432 607</a></li>
+              <li><a href="mailto:info@medytacjakrakow.pl">info@medytacjakrakow.pl</a></li>
+              <li>ul. Starowiślna 20/5, Kraków</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="footer-newsletter-box">
+            <div class="section-title">
+              <h2 class="text-anime-style-2">Zapisz się na newsletter</h2>
+            </div>
+            <!-- MailerLite embed trafi tutaj -->
+            <div class="newsletter-form">
+              <form id="newsletterForm" action="#" method="POST">
+                <div class="form-group">
+                  <input type="email" name="email" class="form-control" placeholder="Twój adres e-mail" required>
+                  <button type="submit" class="newsletter-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-12">
+          <div class="footer-copyright">
+            <div class="footer-copyright-text">
+              <p>Copyright © {new Date().getFullYear()} Stowarzyszenie Studio Dźwięku Jogi. Wszelkie prawa zastrzeżone.</p>
+            </div>
+            <div class="footer-privacy-policy">
+              <ul>
+                <li><a href="/polityka-prywatnosci/">Polityka prywatności</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Skrypty JS szablonu Restraint (is:inline = bez bundlowania przez Vite) -->
+  <script is:inline src="/js/jquery-3.7.1.min.js"></script>
+  <script is:inline src="/js/bootstrap.min.js"></script>
+  <script is:inline src="/js/validator.min.js"></script>
+  <script is:inline src="/js/jquery.slicknav.js"></script>
+  <script is:inline src="/js/swiper-bundle.min.js"></script>
+  <script is:inline src="/js/jquery.waypoints.min.js"></script>
+  <script is:inline src="/js/jquery.counterup.min.js"></script>
+  <script is:inline src="/js/jquery.magnific-popup.min.js"></script>
+  <script is:inline src="/js/SmoothScroll.js"></script>
+  <script is:inline src="/js/parallaxie.js"></script>
+  <script is:inline src="/js/gsap.min.js"></script>
+  <script is:inline src="/js/magiccursor.js"></script>
+  <script is:inline src="/js/SplitText.js"></script>
+  <script is:inline src="/js/ScrollTrigger.min.js"></script>
+  <script is:inline src="/js/wow.min.js"></script>
+  <script is:inline src="/js/function.js"></script>
+
+</body>
+</html>
