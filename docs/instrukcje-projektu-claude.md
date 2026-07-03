@@ -18,7 +18,7 @@ Hosting Zenbox (LiteSpeed, s34.zenbox.pl). Motyw CheerUp 6.0.3 (brak licencji). 
 - **Ważne:** `local_backend: true` tylko lokalnie — NIE w `public/admin/config.yml`
 - **Widget:** `netlify-identity-widget` jako pakiet npm (nie CDN — CORS)
 - **Netlify Identity:** rejestracja Invite only, Git Gateway włączony
-- **Baza danych operacyjna:** Airtable (konto SDJ, osobne od konta Dariusza) — harmonogramy, zapisy, prowadzący, kategorie
+- **Baza danych operacyjna:** Airtable (konto SDJ założone przez Dariusza, osobne od jego prywatnego konta) — harmonogramy, zapisy, prowadzący, kategorie
 - **Maile transakcyjne:** MailerSend (plan Free, 500 maili/miesiąc — wystarczy dla skali SDJ; szablony maili w kodzie Netlify Function, nie w panelu MailerSend)
 - **Newsletter:** MailerLite (istniejący płatny plan SDJ — tylko osoby które wyraziły zgodę na newsletter)
 - **Szablon:** Restraint (ThemeForest, Bootstrap 5) zakupiony i zintegrowany. Coachi (Creative Market) — inspiracja wizualna, bez zakupu.
@@ -32,8 +32,9 @@ Szkielet strony zbudowany i działający na Netlify:
 - Dynamiczne strony wpisów: `/[slug].astro`
 - `src/content.config.ts` — kolekcje `aktualnosci` i `zajecia` (Astro 7 API)
 - Decap CMS skonfigurowany (`public/admin/config.yml`)
+- **Ochrona przed double content:** `netlify.toml` z nagłówkiem `X-Robots-Tag: noindex` na branch deploy i deploy preview; meta `noindex` w `BaseLayout.astro` warunkowo gdy hostname kończy się na `.netlify.app`
 
-Specyfikacja systemu kalendarza i zapisów **w pełni opracowana** — dokument `SDJ-specyfikacja-kalendarza-v1.3.docx` w folderze `docs/` projektu (do wygenerowania z poprzedniego wątku).
+Specyfikacja systemu kalendarza i zapisów **w pełni opracowana** — dokument `SDJ-specyfikacja-kalendarza-v1.3.docx` w folderze `docs/` projektu.
 
 ## Architektura kalendarza i zapisów (zamknięta koncepcja)
 
@@ -43,7 +44,7 @@ Specyfikacja systemu kalendarza i zapisów **w pełni opracowana** — dokument 
 - **Netlify Functions** — API między frontendem a Airtable i MailerSend
 - Jedynym elementem wspólnym Decap CMS i Airtable jest **slug** zajęć (np. `kirtan-medytacja`)
 
-**Model danych Airtable (8 tabel):**
+**Model danych Airtable (7 tabel) — baza założona i zweryfikowana:**
 - `Kategorie` — nazwa + kolor hex do kalendarza
 - `Prowadzący` — imię/nazwisko, opcjonalne zdjęcie i bio; harmonogram może mieć 1 lub 2 prowadzących
 - `Zajęcia` — slug, kategoria (link), zapisy (select: aktywne/nieaktywne), limity miejsc, przypomnienie, pole `Aktywne` (wyłącznik główny), `Nazwa w kalendarzu` (opcjonalna, skrócona nazwa do widoku siatki desktop)
@@ -53,7 +54,7 @@ Specyfikacja systemu kalendarza i zapisów **w pełni opracowana** — dokument 
 - `Zapisy` — imię, email, telefon, RODO, status (potwierdzony/rezerwowy/anulowany), źródło, harmonogram + data zajęć
 
 **Netlify Functions:**
-- `GET /api/terminy` — cache 60 min (ochrona limitu 1000 wywołań API Airtable/miesiąc)
+- `GET /api/terminy` — cache 60 min (ochrona limitu 1000 wywołań API Airtable/miesiąc); na czas developmentu cache wyłączony
 - `POST /api/zapis` — zapis na żywo (bez cache), mail przez MailerSend
 
 **Kalendarz UI:**
@@ -63,14 +64,13 @@ Specyfikacja systemu kalendarza i zapisów **w pełni opracowana** — dokument 
 
 ## Na horyzoncie (kolejność implementacji)
 
-1. **Airtable** — założenie bazy z 8 tabelami według modelu, widoki dla edytorów
-2. **Netlify Function** GET /api/terminy z cache
-3. **Komponent kalendarza** w Astro (lista + kropki + siatka desktop)
-4. **Netlify Function** POST /api/zapis + MailerSend (potwierdzenia, przypomnienia)
-5. **Newsletter** — MailerLite integracja
-6. **Kontakt** — Netlify Forms
-7. **SEO** — przekierowania 301 w `netlify.toml`
-8. **Launch** — upgrade Netlify do Personal ($9/mies.), konfiguracja MailerSend (SPF merge z Zenbox)
+1. **Netlify Function** GET /api/terminy (bez cache na czas dev, cache 60 min przed launchem)
+2. **Komponent kalendarza** w Astro (lista + kropki + siatka desktop)
+3. **Netlify Function** POST /api/zapis + MailerSend (potwierdzenia, przypomnienia)
+4. **Newsletter** — MailerLite integracja
+5. **Kontakt** — Netlify Forms
+6. **SEO** — przekierowania 301 w `netlify.toml`
+7. **Launch** — upgrade Netlify do Personal ($9/mies.), konfiguracja MailerSend (SPF merge z Zenbox), canonical URL
 
 ## Kluczowe zasady i ograniczenia
 
@@ -80,11 +80,10 @@ Specyfikacja systemu kalendarza i zapisów **w pełni opracowana** — dokument 
 - Astro 7 dev server nie serwuje `index.html` z podfolderów `public/` — panel CMS w `src/pages/admin.astro`
 - Free plan nie obsługuje prywatnych repo w organizacjach GitHub — repo publiczne
 - **System kredytowy:** 300 kredytów/mies. (free), 1 deploy = 15 kredytów ≈ 20 deployów/mies. Development lokalnie żeby nie palić kredytów. **Editorial Workflow = 2-3 buildy na publikację** → plan Personal ($9/mies.) potrzebny od startu korzystania przez edytorów
-- Editorial Workflow: każda zmiana w Decap CMS przechodzi przez Deploy Preview przed publikacją — edytorzy publikują samodzielnie przez przycisk "Publish" w Decap, bez udziału Dariusza. `robots.txt` blokujący indeksację na branchach podglądowych — do skonfigurowania
 
 **Airtable:**
 - Konto SDJ (osobne od konta Dariusza) — dane osobowe uczestników = własność stowarzyszenia (RODO)
-- Limit 1000 wywołań API/miesiąc (free) → cache 60 min w Netlify Function
+- Limit 1000 wywołań API/miesiąc (free) → cache 60 min w Netlify Function (wyłączony na czas dev)
 - Limit 1000 rekordów/baza łącznie → okresowa archiwizacja tabeli Zapisy (eksport CSV + usunięcie starych)
 - Nazwy pól z polskimi znakami diakrytycznymi (dla edytorów); w kodzie: `record.fields['Prowadzący']` — zmienne lokalne bez diakrytyków tylko z przyczyn technicznych JS
 
