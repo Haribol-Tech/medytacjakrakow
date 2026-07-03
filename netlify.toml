@@ -6,3 +6,14 @@
   for = "/*"
   [headers.values]
     Access-Control-Allow-Origin = "*"
+
+# Blokada indeksacji na domenie deweloperskiej Netlify
+[[context.branch-deploy.headers]]
+  for = "/*"
+  [context.branch-deploy.headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[context.deploy-preview.headers]]
+  for = "/*"
+  [context.deploy-preview.headers.values]
+    X-Robots-Tag = "noindex, nofollow"

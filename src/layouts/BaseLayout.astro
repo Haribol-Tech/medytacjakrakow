@@ -10,6 +10,8 @@ const {
   description = 'Zajęcia medytacji i jogi w Krakowie. Medytacja od podstaw, kirtan, relaks i redukcja stresu.',
   bodyClass = '',
 } = Astro.props;
+
+const isNetlifyDomain = Astro.url.hostname.endsWith('.netlify.app');
 ---
 
 <!DOCTYPE html>
@@ -23,6 +25,7 @@ const {
   <title>{title}</title>
 
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  {isNetlifyDomain && <meta name="robots" content="noindex, nofollow">}
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
