@@ -47,7 +47,7 @@ Specyfikacja systemu kalendarza i zapisów **w pełni opracowana** — dokument 
 **Model danych Airtable (7 tabel) — baza założona i zweryfikowana:**
 - `Kategorie` — nazwa + kolor hex do kalendarza
 - `Prowadzący` — imię/nazwisko, opcjonalne zdjęcie i bio; harmonogram może mieć 1 lub 2 prowadzących
-- `Zajęcia` — slug, kategoria (link), zapisy (select: aktywne/nieaktywne), limity miejsc, przypomnienie, pole `Aktywne` (wyłącznik główny), `Nazwa w kalendarzu` (opcjonalna, skrócona nazwa do widoku siatki desktop)
+- `Zajęcia` — slug, kategoria (link), zapisy (select: aktywne/nieaktywne), limity miejsc, przypomnienie, pole `Aktywne` (wyłącznik główny)
 - `Harmonogramy` — tryb (co-tydzien/co-miesiac-dzien-tygodnia/jednorazowe), godziny, miejsce, prowadzący, zapisy, limity, `Aktywny`
 - `Wyjątki` — typ: `odwołane` (widoczne w kalendarzu) lub `dezaktywowane` (ukryte)
 - `Widoczność miesięcy` — 24 wiersze (2 lata), checkbox `Widoczny publicznie`; bieżący i przyszłe miesiące wymagają zatwierdzenia
@@ -64,7 +64,7 @@ Specyfikacja systemu kalendarza i zapisów **w pełni opracowana** — dokument 
 
 ## Na horyzoncie (kolejność implementacji)
 
-1. **Netlify Function** GET /api/terminy (bez cache na czas dev, cache 60 min przed launchem)
+1. **Netlify Function** GET /api/terminy (bez cache na czas dev, cache 60 min przed launchem) ✓ gotowe
 2. **Komponent kalendarza** w Astro (lista + kropki + siatka desktop)
 3. **Netlify Function** POST /api/zapis + MailerSend (potwierdzenia, przypomnienia)
 4. **Newsletter** — MailerLite integracja
@@ -94,6 +94,7 @@ Specyfikacja systemu kalendarza i zapisów **w pełni opracowana** — dokument 
 - Zenbox PHP dostępny jako plan B dla wysyłki maili gdyby MailerSend nie wypalił
 
 **Decap CMS — podział treści:**
-- Decap: opisy zajęć, zdjęcia (optymalizowane przez Astro `<Image />`), filmy YouTube (tylko link)
+- Decap: opisy zajęć (w tym `nazwa_skrocona` — opcjonalna skrócona nazwa do widoku siatki kalendarza desktop), zdjęcia (optymalizowane przez Astro `<Image />`), filmy YouTube (tylko link)
 - Airtable: wszystko operacyjne — harmonogramy, zapisy, kategorie
 - Slug = jedyny element wspólny (przepisywany raz przy tworzeniu zajęć, nigdy nie zmienia)
+- Astro podczas budowania strony generuje słownik `slug → { nazwa, nazwa_skrocona }` dostępny dla skryptu kalendarza jako zmienna JavaScript — frontend używa `nazwa_skrocona || nazwa` gdy `terminy.js` zwraca tylko slug
