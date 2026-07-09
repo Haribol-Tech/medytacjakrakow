@@ -34,7 +34,7 @@ Szkielet strony zbudowany i działający na Netlify:
 - Decap CMS skonfigurowany (`public/admin/config.yml`)
 - **Ochrona przed double content:** `netlify.toml` z nagłówkiem `X-Robots-Tag: noindex` na branch deploy i deploy preview; meta `noindex` w `BaseLayout.astro` warunkowo gdy hostname kończy się na `.netlify.app`
 
-Specyfikacja systemu kalendarza i zapisów **w pełni opracowana** — dokument `SDJ-specyfikacja-kalendarza-v1.3.docx` w folderze `docs/` projektu.
+Specyfikacja systemu kalendarza i zapisów **w pełni opracowana** — dokument `SDJ-specyfikacja-kalendarza-v1.4.docx` w folderze `docs/` projektu.
 
 ## Architektura kalendarza i zapisów (zamknięta koncepcja)
 
@@ -58,9 +58,13 @@ Specyfikacja systemu kalendarza i zapisów **w pełni opracowana** — dokument 
 - `POST /api/zapis` — zapis na żywo (bez cache), mail przez MailerSend
 
 **Kalendarz UI:**
-- Widok lista (karty zajęć) + widok kropki (siatka z kolorowymi kropkami, tap → lista poniżej) + widok siatka desktop
-- Formularz zapisu jako modal (bottom sheet)
+- Pełne decyzje UI/UX udokumentowane w `docs/kalendarz-ui.md` — tamten dokument jest źródłem prawdy dla implementacji komponentu
+- Mobile: widok lista (domyślny) + widok kropki; Desktop: widok lista (domyślny) + widok siatka
+- Karty zajęć mają dwa przyciski: "Więcej informacji" (secondary) + przycisk akcji zapisu (primary)
+- Formularz zapisu jako modal (bottom sheet) — otwierany wyłącznie przez przycisk akcji zapisu
 - Logika widoczności: przeszłość zawsze widoczna, bieżący i przyszłe miesiące — sprawdź tabelę `Widoczność miesięcy`
+- Astro podczas budowania generuje dwa słowniki JS: `window.ZAJECIA_NAZWY` (slug → nazwa + nazwa_skrocona) i `window.ZAJECIA_OPISY` (slug → opis, używany gdy `OPIS_ZAJEC_TRYB = 'modal'`)
+- Stałe konfiguracyjne w `public/js/kalendarz.js`: `DOMYSLNY_WIDOK`, `PROG_WYSWIETLANIA_MIEJSC`, `POKAZ_FILTR_KATEGORII`, `OPIS_ZAJEC_TRYB`
 
 ## Na horyzoncie (kolejność implementacji)
 
