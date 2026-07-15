@@ -12,6 +12,7 @@ const { title, description, pageTitle, breadcrumb } = Astro.props;
 ---
 
 <BaseLayout title={title} description={description}>
+  <slot name="head" slot="head" />
 
   <!-- Page Header -->
   <div class="page-hero">

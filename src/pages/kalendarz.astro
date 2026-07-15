@@ -32,6 +32,9 @@ for (const entry of zajeciaEntries) {
   pageTitle="Grafik zajęć"
   breadcrumb="Grafik"
 >
+  <!-- CSS kalendarza w <head> -->
+  <link slot="head" rel="stylesheet" href="/css/kalendarz.css" />
+
   <!-- Słowniki dla skryptu kalendarza -->
   <script define:vars={{ zajeciaNazwy, zajeciaOpisy }}>
     window.ZAJECIA_NAZWY = zajeciaNazwy;
@@ -39,4 +42,7 @@ for (const entry of zajeciaEntries) {
   </script>
 
   <Kalendarz />
+
+  <!-- JS kalendarza na końcu strony -->
+  <script is:inline src="/js/kalendarz.js"></script>
 </PageLayout>
