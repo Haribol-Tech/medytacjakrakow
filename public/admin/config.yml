@@ -26,3 +26,16 @@ collections:
           - { label: Kirtan, value: kirtan }
       - { name: image, label: Zdjęcie (opcjonalnie), widget: image, required: false }
       - { name: body, label: Treść, widget: markdown }
+
+  - name: zajecia
+    label: Zajęcia
+    label_singular: Zajęcia
+    folder: src/content/zajecia
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { name: title, label: Nazwa zajęć, widget: string }
+      - { name: nazwa_skrocona, label: Skrócona nazwa (do kalendarza desktop), widget: string, required: false, hint: "Opcjonalnie — jeśli pełna nazwa jest za długa do wyświetlenia w siatce kalendarza. Jeśli puste, używana jest pełna nazwa." }
+      - { name: description, label: Opis, widget: markdown, required: false }
+      - { name: image, label: Zdjęcie główne, widget: image, required: false }
+      - { name: kolejnosc, label: Kolejność na liście, widget: number, required: false, hint: "Mniejsza liczba = wyżej na liście zajęć." }

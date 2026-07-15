@@ -16,6 +16,7 @@ const zajecia = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/zajecia' }),
   schema: z.object({
     title: z.string(),
+    nazwa_skrocona: z.string().optional(),
     description: z.string().optional(),
     image: z.string().optional(),
     kolejnosc: z.number().optional(),

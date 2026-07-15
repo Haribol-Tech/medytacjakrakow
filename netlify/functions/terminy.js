@@ -124,16 +124,30 @@ export default async function handler(req, context) {
   }
 
   try {
-    // Zakresy miesięcy: bieżący + 2 do przodu
+    // Zakresy miesięcy: opcjonalny parametr ?rok=RRRR&miesiac=MM lub bieżący + 2 do przodu
     const dzisiaj = new Date();
+    const url = new URL(req.url);
+    const paramRok = parseInt(url.searchParams.get('rok'));
+    const paramMiesiac = parseInt(url.searchParams.get('miesiac'));
+
     const miesiace = [];
-    for (let i = 0; i < 3; i++) {
-      const d = new Date(dzisiaj.getFullYear(), dzisiaj.getMonth() + i, 1);
+    if (paramRok && paramMiesiac && paramMiesiac >= 1 && paramMiesiac <= 12) {
+      // Tryb pojedynczego miesiąca (nawigacja wstecz/wprzód)
       miesiace.push({
-        rok: d.getFullYear(),
-        miesiac: d.getMonth() + 1,
-        klucz: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+        rok: paramRok,
+        miesiac: paramMiesiac,
+        klucz: `${paramRok}-${String(paramMiesiac).padStart(2, '0')}`,
       });
+    } else {
+      // Tryb domyślny: bieżący + 2 do przodu
+      for (let i = 0; i < 3; i++) {
+        const d = new Date(dzisiaj.getFullYear(), dzisiaj.getMonth() + i, 1);
+        miesiace.push({
+          rok: d.getFullYear(),
+          miesiac: d.getMonth() + 1,
+          klucz: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+        });
+      }
     }
 
     // Pobierz dane równolegle
@@ -229,7 +243,6 @@ export default async function handler(req, context) {
             data,
             harmonogramId: harmonogram.id,
             slug: zajecie['Slug'] ?? null,
-            nazwaWKalendarzu: zajecie['Nazwa w kalendarzu'] ?? null,
             godzinaStart: pola['Godzina start'] ?? null,
             godzinaKoniec: pola['Godzina koniec'] ?? null,
             miejsceNazwa: pola['Miejsce nazwa'] ?? null,
