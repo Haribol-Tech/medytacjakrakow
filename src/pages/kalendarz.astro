@@ -1,0 +1,42 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import Kalendarz from '../components/Kalendarz.astro';
+import { getCollection } from 'astro:content';
+
+// Pobierz kolekcję zajęć z Decap CMS
+const zajeciaEntries = await getCollection('zajecia').catch(() => []);
+
+// Zbuduj słownik nazw: slug → { nazwa, nazwa_skrocona }
+const zajeciaNazwy: Record<string, { nazwa: string; nazwa_skrocona: string }> = {};
+for (const entry of zajeciaEntries) {
+  zajeciaNazwy[entry.id] = {
+    nazwa: entry.data.title,
+    nazwa_skrocona: entry.data.nazwa_skrocona ?? '',
+  };
+}
+
+// Zbuduj słownik opisów: slug → { opis, zdjecie }
+// Używany tylko gdy OPIS_ZAJEC_TRYB = 'modal'
+const zajeciaOpisy: Record<string, { opis: string; zdjecie: string }> = {};
+for (const entry of zajeciaEntries) {
+  zajeciaOpisy[entry.id] = {
+    opis: entry.data.description ?? '',
+    zdjecie: entry.data.image ?? '',
+  };
+}
+---
+
+<PageLayout
+  title="Grafik zajęć — Studio Dźwięku Jogi Kraków"
+  description="Sprawdź harmonogram zajęć medytacji i jogi w Krakowie. Zapisz się online."
+  pageTitle="Grafik zajęć"
+  breadcrumb="Grafik"
+>
+  <!-- Słowniki dla skryptu kalendarza -->
+  <script define:vars={{ zajeciaNazwy, zajeciaOpisy }}>
+    window.ZAJECIA_NAZWY = zajeciaNazwy;
+    window.ZAJECIA_OPISY = zajeciaOpisy;
+  </script>
+
+  <Kalendarz />
+</PageLayout>

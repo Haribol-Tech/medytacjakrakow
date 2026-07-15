@@ -1,0 +1,69 @@
+---
+// Komponent kalendarza — shell HTML
+// Logika UI w public/js/kalendarz.js
+// Style w public/css/kalendarz.css
+---
+
+<link rel="stylesheet" href="/css/kalendarz.css" />
+
+<div id="kalendarz" class="kalendarz-wrapper">
+
+  <!-- Nagłówek: nawigacja między miesiącami + przełącznik widoków -->
+  <div class="kalendarz-header">
+    <div class="kalendarz-nav">
+      <button id="prev-miesiac" class="kalendarz-nav-btn" aria-label="Poprzedni miesiąc">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <span id="kalendarz-miesiac-label" class="kalendarz-miesiac-label"></span>
+      <button id="next-miesiac" class="kalendarz-nav-btn" aria-label="Następny miesiąc">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+    <div id="kalendarz-widok-przelacznik" class="kalendarz-widok-przelacznik">
+      <!-- Przyciski przełącznika widoku wstrzykiwane przez JS (zależą od rozmiaru ekranu) -->
+    </div>
+  </div>
+
+  <!-- Filtr kategorii (pillsy) — wstrzykiwany przez JS gdy POKAZ_FILTR_KATEGORII = true -->
+  <div id="kalendarz-filtr" class="kalendarz-filtr" hidden></div>
+
+  <!-- Obszar zawartości — skeleton / widok lista / widok kropki / widok siatka -->
+  <div id="kalendarz-content" class="kalendarz-content">
+    <!-- Skeleton loader (pokazywany podczas ładowania) -->
+    <div id="kalendarz-skeleton" class="kalendarz-skeleton">
+      <div class="skeleton-karta"></div>
+      <div class="skeleton-karta"></div>
+      <div class="skeleton-karta"></div>
+    </div>
+  </div>
+
+  <!-- Komunikat błędu (ukryty domyślnie) -->
+  <div id="kalendarz-blad" class="kalendarz-blad" hidden>
+    <p>Nie udało się załadować kalendarza. Spróbuj odświeżyć stronę.</p>
+  </div>
+
+  <!-- Modal zapisu (bottom sheet) -->
+  <div id="zapis-modal-overlay" class="zapis-modal-overlay" hidden>
+    <div id="zapis-modal" class="zapis-modal" role="dialog" aria-modal="true" aria-labelledby="zapis-modal-tytul">
+      <div class="zapis-modal-header">
+        <h3 id="zapis-modal-tytul" class="zapis-modal-tytul"></h3>
+        <button id="zapis-modal-zamknij" class="zapis-modal-zamknij" aria-label="Zamknij">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div id="zapis-modal-body" class="zapis-modal-body">
+        <!-- Zawartość wstrzykiwana przez JS: formularz / sukces / błąd -->
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="/js/kalendarz.js"></script>

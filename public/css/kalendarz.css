@@ -1,0 +1,782 @@
+/* ============================================================
+   KALENDARZ SDJ — style
+   Używa zmiennych CSS z public/css/custom.css (szablon Restraint)
+   ============================================================ */
+
+/* ---- Wrapper ---- */
+.kalendarz-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 16px 60px;
+}
+
+/* ---- Nagłówek: nawigacja + przełącznik widoków ---- */
+.kalendarz-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 0 20px;
+  gap: 16px;
+}
+
+.kalendarz-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.kalendarz-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--divider-color);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--primary-color);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.kalendarz-nav-btn:hover {
+  background: var(--secondary-color);
+  border-color: var(--accent-color);
+}
+
+.kalendarz-miesiac-label {
+  font-family: var(--accent-font);
+  font-size: 1.2rem;
+  color: var(--primary-color);
+  min-width: 160px;
+  text-align: center;
+}
+
+/* Przełącznik widoków */
+.kalendarz-widok-przelacznik {
+  display: flex;
+  gap: 8px;
+}
+
+.widok-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--divider-color);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--text-color);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.widok-btn.aktywny {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--white-color);
+}
+
+/* ---- Filtr kategorii (pillsy) ---- */
+.kalendarz-filtr {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-bottom: 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.kalendarz-filtr::-webkit-scrollbar {
+  display: none;
+}
+
+.filtr-pill {
+  padding: 6px 16px;
+  border: 1px solid var(--divider-color);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--text-color);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.filtr-pill.aktywny {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--white-color);
+}
+
+/* ---- Skeleton loader ---- */
+.kalendarz-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeleton-karta {
+  height: 130px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-puls 1.5s infinite;
+}
+
+@keyframes skeleton-puls {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ---- Komunikat błędu ---- */
+.kalendarz-blad {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-color);
+}
+
+/* ---- WIDOK LISTA ---- */
+.lista-widok {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Karta zajęć */
+.karta {
+  display: flex;
+  border: 1px solid var(--divider-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--white-color);
+  transition: box-shadow 0.2s;
+}
+
+.karta:hover {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.karta.odwolane {
+  opacity: 0.55;
+}
+
+/* Pasek koloru kategorii */
+.karta-kolor {
+  width: 5px;
+  flex-shrink: 0;
+  background: var(--accent-secondary-color);
+}
+
+.karta-body {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.karta-nazwa {
+  font-family: var(--accent-font);
+  font-size: 1rem;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.karta-data {
+  font-size: 0.9rem;
+  color: var(--primary-color);
+}
+
+.karta-godzina {
+  font-size: 0.85rem;
+  color: var(--text-color);
+}
+
+.karta-miejsce {
+  font-size: 0.85rem;
+  color: var(--text-color);
+}
+
+.karta-prowadzacy {
+  font-size: 0.85rem;
+  color: var(--text-color);
+  font-style: italic;
+}
+
+.karta-odwolane-etykieta {
+  font-size: 0.8rem;
+  color: var(--error-color);
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.karta-miejsca {
+  font-size: 0.8rem;
+  color: var(--text-color);
+  margin-top: 4px;
+}
+
+/* Stopka karty z przyciskami */
+.karta-stopka {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn-wiecej-info {
+  padding: 7px 16px;
+  border: 1px solid var(--accent-color);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--accent-color);
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+  display: inline-block;
+}
+
+.btn-wiecej-info:hover {
+  background: var(--accent-color);
+  color: var(--white-color);
+}
+
+.btn-zapisz {
+  padding: 7px 16px;
+  border: 1px solid var(--accent-color);
+  border-radius: 4px;
+  background: var(--accent-color);
+  color: var(--white-color);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-zapisz:hover {
+  opacity: 0.85;
+}
+
+.btn-rezerwowa {
+  padding: 7px 16px;
+  border: 1px solid var(--text-color);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-color);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-rezerwowa:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.karta-zapisy-zamkniete {
+  font-size: 0.85rem;
+  color: var(--text-color);
+}
+
+.karta-bez-zapisow {
+  font-size: 0.85rem;
+  color: var(--text-color);
+}
+
+/* ---- WIDOK KROPKI (mobile) ---- */
+.kropki-widok {
+  display: flex;
+  flex-direction: column;
+}
+
+.kropki-siatka {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 16px;
+}
+
+.kropki-naglowek-dzien {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--text-color);
+  padding: 4px 0;
+  text-transform: uppercase;
+}
+
+.kropki-komorka {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 2px;
+  border-radius: 6px;
+  min-height: 44px;
+  cursor: default;
+}
+
+.kropki-komorka.ma-zajecia {
+  cursor: pointer;
+}
+
+.kropki-komorka.aktywna {
+  background: var(--accent-color);
+}
+
+.kropki-komorka.aktywna .kropki-dzien-num {
+  color: var(--white-color);
+}
+
+.kropki-komorka.dzisiaj .kropki-dzien-num {
+  font-weight: 700;
+  color: var(--accent-color);
+}
+
+.kropki-komorka.aktywna.dzisiaj .kropki-dzien-num {
+  color: var(--white-color);
+}
+
+.kropki-dzien-num {
+  font-size: 0.85rem;
+  color: var(--primary-color);
+  line-height: 1.4;
+}
+
+.kropki-dots {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.kropka {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-secondary-color);
+}
+
+/* Panel dzienny w widoku kropki */
+.kropki-panel-dzienny {
+  border-top: 1px solid var(--divider-color);
+  padding-top: 16px;
+  max-height: 50vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Mini-karta w panelu dziennym */
+.mini-karta {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--divider-color);
+  border-radius: 8px;
+  background: var(--white-color);
+}
+
+.mini-karta-kropka {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+  background: var(--accent-secondary-color);
+}
+
+.mini-karta-info {
+  flex: 1;
+}
+
+.mini-karta-nazwa {
+  font-size: 0.9rem;
+  color: var(--primary-color);
+  font-weight: 600;
+  margin: 0 0 2px;
+}
+
+.mini-karta-godzina {
+  font-size: 0.8rem;
+  color: var(--text-color);
+}
+
+.mini-karta-stopka {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+/* ---- WIDOK SIATKA (desktop) ---- */
+.siatka-widok {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .siatka-widok {
+    display: block;
+  }
+}
+
+.siatka-naglowek {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  margin-bottom: 1px;
+}
+
+.siatka-naglowek-dzien {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-color);
+  padding: 8px 4px;
+  text-transform: uppercase;
+}
+
+.siatka-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: var(--divider-color);
+  border: 1px solid var(--divider-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.siatka-komorka {
+  background: var(--white-color);
+  min-height: 90px;
+  padding: 6px 4px 4px;
+  position: relative;
+  cursor: default;
+}
+
+.siatka-komorka.inny-miesiac {
+  background: var(--secondary-color);
+}
+
+.siatka-komorka.ma-jedno-zajecie {
+  cursor: pointer;
+}
+
+.siatka-komorka.ma-jedno-zajecie:hover {
+  background: #f5f5f5;
+}
+
+.siatka-komorka.dzisiaj .siatka-dzien-num {
+  background: var(--accent-color);
+  color: var(--white-color);
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.siatka-dzien-num {
+  font-size: 0.75rem;
+  color: var(--text-color);
+  margin-bottom: 4px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.siatka-paski {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.siatka-pasek {
+  border-radius: 3px;
+  padding: 2px 5px;
+  font-size: 0.7rem;
+  color: var(--white-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  background: var(--accent-color);
+  transition: opacity 0.15s;
+}
+
+.siatka-pasek:hover {
+  opacity: 0.85;
+}
+
+/* Panel detali siatki desktop */
+.siatka-panel-detali {
+  margin-top: 16px;
+  padding: 20px;
+  border: 1px solid var(--divider-color);
+  border-radius: 8px;
+  background: var(--white-color);
+  display: none;
+}
+
+.siatka-panel-detali.widoczny {
+  display: block;
+}
+
+.siatka-panel-nazwa {
+  font-family: var(--accent-font);
+  font-size: 1.1rem;
+  color: var(--primary-color);
+  margin: 0 0 8px;
+}
+
+.siatka-panel-info {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  margin-bottom: 4px;
+}
+
+.siatka-panel-stopka {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+/* ---- MODAL ZAPISU (bottom sheet) ---- */
+.zapis-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.zapis-modal {
+  background: var(--white-color);
+  width: 100%;
+  max-width: 600px;
+  border-radius: 16px 16px 0 0;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modal-slide-up 0.3s ease-out;
+}
+
+@keyframes modal-slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.zapis-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 12px;
+  border-bottom: 1px solid var(--divider-color);
+  position: sticky;
+  top: 0;
+  background: var(--white-color);
+}
+
+.zapis-modal-tytul {
+  font-family: var(--accent-font);
+  font-size: 1rem;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.zapis-modal-zamknij {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.zapis-modal-zamknij:hover {
+  background: var(--secondary-color);
+}
+
+.zapis-modal-body {
+  padding: 20px;
+}
+
+/* Formularz w modalu */
+.zapis-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.zapis-form-pole {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.zapis-form-pole label {
+  font-size: 0.85rem;
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+.zapis-form-pole input,
+.zapis-form-pole textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--divider-color);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: var(--primary-color);
+  background: var(--white-color);
+  transition: border-color 0.2s;
+  font-family: var(--default-font);
+}
+
+.zapis-form-pole input:focus,
+.zapis-form-pole textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.zapis-form-pole textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.zapis-form-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.zapis-form-checkbox input[type="checkbox"] {
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: var(--accent-color);
+}
+
+.zapis-info-rezerwowa {
+  padding: 12px;
+  background: var(--secondary-color);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: var(--text-color);
+  border-left: 3px solid var(--accent-secondary-color);
+}
+
+.zapis-blad-komunikat {
+  padding: 10px 12px;
+  background: #fef0f0;
+  border: 1px solid var(--error-color);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: var(--error-color);
+  display: none;
+}
+
+.zapis-blad-komunikat.widoczny {
+  display: block;
+}
+
+.btn-wyslij {
+  padding: 12px 24px;
+  background: var(--accent-color);
+  border: none;
+  border-radius: 4px;
+  color: var(--white-color);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  font-family: var(--default-font);
+}
+
+.btn-wyslij:hover {
+  opacity: 0.85;
+}
+
+.btn-wyslij:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Stan sukcesu w modalu */
+.zapis-sukces {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  padding: 20px 0;
+}
+
+.zapis-sukces-ikona {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #e8f5e9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2e7d32;
+}
+
+.zapis-sukces-tekst {
+  font-size: 0.95rem;
+  color: var(--primary-color);
+  line-height: 1.5;
+}
+
+.btn-zamknij-sukces {
+  padding: 10px 24px;
+  border: 1px solid var(--accent-color);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--accent-color);
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-family: var(--default-font);
+  transition: all 0.2s;
+}
+
+.btn-zamknij-sukces:hover {
+  background: var(--accent-color);
+  color: var(--white-color);
+}
+
+/* ---- Responsywność ---- */
+@media (max-width: 767px) {
+  .siatka-widok {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .kropki-widok {
+    display: none !important;
+  }
+
+  .zapis-modal {
+    border-radius: 12px;
+    margin-bottom: 40px;
+  }
+
+  .zapis-modal-overlay {
+    align-items: center;
+  }
+}
