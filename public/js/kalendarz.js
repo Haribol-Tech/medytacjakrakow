@@ -31,15 +31,8 @@ function czyMobile() {
   return getComputedStyle(el).display !== 'none';
 }
 
-// Ustal widok z localStorage z walidacją per urządzenie
-function ustalWidokPoczatkowy() {
-  const zapisany = localStorage.getItem('sdj_widok');
-  const mobile = czyMobile();
-  const dozwolone = mobile ? ['lista', 'kropki'] : ['lista', 'siatka'];
-  if (zapisany && dozwolone.includes(zapisany)) return zapisany;
-  return DOMYSLNY_WIDOK;
-}
-let aktualnyWidok = ustalWidokPoczatkowy();
+// Widok ustalany w DOMContentLoaded gdy DOM jest gotowy
+let aktualnyWidok = DOMYSLNY_WIDOK;
 let aktualnaKategoria = null; // null = wszystkie
 let zaladowaneDane = {}; // cache danych per miesiac: 'YYYY-MM' → terminy[]
 let ladowanie = false;
@@ -68,12 +61,38 @@ document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
   const terminParam = params.get('termin');
 
+  // Ustal widok po załadowaniu DOM (czyMobile() wymaga elementu w DOM)
+  const zapisanyWidok = localStorage.getItem('sdj_widok');
+  const mobile = czyMobile();
+  const dozwolone = mobile ? ['lista', 'kropki'] : ['lista', 'siatka'];
+  aktualnyWidok = (zapisanyWidok && dozwolone.includes(zapisanyWidok))
+    ? zapisanyWidok
+    : DOMYSLNY_WIDOK;
+
   // Inicjalizuj przełącznik widoków
   renderujPrzelacznikWidokow();
 
   // Nawigacja
   el.prevBtn.addEventListener('click', () => zmienMiesiac(-1));
   el.nextBtn.addEventListener('click', () => zmienMiesiac(1));
+
+  // Reaguj na zmianę rozmiaru okna — aktualizuj przełącznik widoków
+  let ostatniMobile = czyMobile();
+  window.addEventListener('resize', () => {
+    const terazMobile = czyMobile();
+    if (terazMobile !== ostatniMobile) {
+      ostatniMobile = terazMobile;
+      // Jeśli aktualny widok nie jest dozwolony na nowym urządzeniu — reset do listy
+      const dozwolone = terazMobile ? ['lista', 'kropki'] : ['lista', 'siatka'];
+      if (!dozwolone.includes(aktualnyWidok)) {
+        aktualnyWidok = 'lista';
+        localStorage.setItem('sdj_widok', 'lista');
+      }
+      renderujPrzelacznikWidokow();
+      const klucz = `${aktualnyRok}-${String(aktualnyMiesiac).padStart(2, '0')}`;
+      if (zaladowaneDane[klucz]) renderuj(zaladowaneDane[klucz]);
+    }
+  });
 
   // Zamknięcie modalu
   el.modalZamknij.addEventListener('click', zamknijModal);
@@ -235,6 +254,9 @@ function renderujListe(terminy, terminParam = null) {
 }
 
 function przewinDoNajblizszych(wrapper, terminy) {
+  // Przewijanie tylko na mobile — na desktop jest dość miejsca
+  if (!czyMobile()) return;
+
   const dzisiajStr = new Date().toISOString().slice(0, 10);
   const karty = wrapper.querySelectorAll('.karta');
 
@@ -244,15 +266,13 @@ function przewinDoNajblizszych(wrapper, terminy) {
       setTimeout(() => {
         const karta = karty[i];
         if (!karta) return;
-        // Przewiń stronę tak żeby karta była w górnej części widoku z marginesem
         const rect = karta.getBoundingClientRect();
-        const offset = window.scrollY + rect.top - 120; // 120px od górnej krawędzi okna
+        const offset = window.scrollY + rect.top - 120;
         window.scrollTo({ top: offset, behavior: 'smooth' });
       }, 150);
       return;
     }
   }
-  // Jeśli nie ma nadchodzących — zostań na górze
 }
 
 function tworzKarte(termin) {
