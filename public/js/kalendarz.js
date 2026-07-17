@@ -234,7 +234,14 @@ function przewinDoNajblizszych(wrapper, terminy) {
   // Szukaj najbliższych nadchodzących
   for (let i = 0; i < terminy.length; i++) {
     if (terminy[i].data >= dzisiajStr && !terminy[i].odwolane) {
-      setTimeout(() => karty[i]?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+      setTimeout(() => {
+        const karta = karty[i];
+        if (!karta) return;
+        // Przewiń stronę tak żeby karta była w górnej części widoku z marginesem
+        const rect = karta.getBoundingClientRect();
+        const offset = window.scrollY + rect.top - 120; // 120px od górnej krawędzi okna
+        window.scrollTo({ top: offset, behavior: 'smooth' });
+      }, 150);
       return;
     }
   }
