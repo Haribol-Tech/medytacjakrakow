@@ -23,7 +23,16 @@ const DNI_TYGODNIA_KROTKIE = ['Nd','Pn','Wt','Śr','Czw','Pt','Sb'];
 /* ---- Stan aplikacji ---- */
 let aktualnyRok = new Date().getFullYear();
 let aktualnyMiesiac = new Date().getMonth() + 1; // 1-12
-let aktualnyWidok = localStorage.getItem('sdj_widok') || DOMYSLNY_WIDOK;
+
+// Ustal widok z localStorage z walidacją per urządzenie
+function ustalWidokPoczatkowy() {
+  const zapisany = localStorage.getItem('sdj_widok');
+  const isMobile = window.matchMedia('(max-width: 767px)').matches;
+  const dozwolone = isMobile ? ['lista', 'kropki'] : ['lista', 'siatka'];
+  if (zapisany && dozwolone.includes(zapisany)) return zapisany;
+  return DOMYSLNY_WIDOK;
+}
+let aktualnyWidok = ustalWidokPoczatkowy();
 let aktualnaKategoria = null; // null = wszystkie
 let zaladowaneDane = {}; // cache danych per miesiac: 'YYYY-MM' → terminy[]
 let ladowanie = false;
@@ -557,7 +566,7 @@ function pokazPanelSiatki(panel, termin) {
    ============================================================ */
 function renderujPrzelacznikWidokow() {
   el.widokPrzelacznik.innerHTML = '';
-  const isMobile = window.innerWidth < 768;
+  const isMobile = window.matchMedia('(max-width: 767px)').matches;
 
   const widoki = isMobile
     ? [{ id: 'lista', label: 'Lista' }, { id: 'kropki', label: 'Kropki' }]
