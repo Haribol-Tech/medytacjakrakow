@@ -1,3 +1,14 @@
+/* Pomocniczy element do detekcji mobile w JS */
+.mobile-detector {
+  display: none; /* desktop */
+}
+
+@media (max-width: 767px) {
+  .mobile-detector {
+    display: block; /* mobile */
+  }
+}
+
 /* ============================================================
    KALENDARZ SDJ — style
    Używa zmiennych CSS z public/css/custom.css (szablon Restraint)

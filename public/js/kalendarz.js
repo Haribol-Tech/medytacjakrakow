@@ -24,11 +24,18 @@ const DNI_TYGODNIA_KROTKIE = ['Nd','Pn','Wt','Śr','Czw','Pt','Sb'];
 let aktualnyRok = new Date().getFullYear();
 let aktualnyMiesiac = new Date().getMonth() + 1; // 1-12
 
+// Detekcja mobile przez dedykowany element CSS (niezawodna)
+function czyMobile() {
+  const el = document.getElementById('mobile-detector');
+  if (!el) return window.innerWidth < 768;
+  return getComputedStyle(el).display !== 'none';
+}
+
 // Ustal widok z localStorage z walidacją per urządzenie
 function ustalWidokPoczatkowy() {
   const zapisany = localStorage.getItem('sdj_widok');
-  const isMobile = window.matchMedia('(max-width: 767px)').matches;
-  const dozwolone = isMobile ? ['lista', 'kropki'] : ['lista', 'siatka'];
+  const mobile = czyMobile();
+  const dozwolone = mobile ? ['lista', 'kropki'] : ['lista', 'siatka'];
   if (zapisany && dozwolone.includes(zapisany)) return zapisany;
   return DOMYSLNY_WIDOK;
 }
@@ -573,7 +580,7 @@ function pokazPanelSiatki(panel, termin) {
    ============================================================ */
 function renderujPrzelacznikWidokow() {
   el.widokPrzelacznik.innerHTML = '';
-  const isMobile = window.matchMedia('(max-width: 767px)').matches;
+  const isMobile = czyMobile();
 
   const widoki = isMobile
     ? [{ id: 'lista', label: 'Lista' }, { id: 'kropki', label: 'Kropki' }]
