@@ -606,10 +606,18 @@ function renderujPrzelacznikWidokow() {
     ? [{ id: 'lista', label: 'Lista' }, { id: 'kropki', label: 'Kropki' }]
     : [{ id: 'lista', label: 'Lista' }, { id: 'siatka', label: 'Siatka' }];
 
+  const IKONY = {
+    'lista': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="3" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="3" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>',
+    'kropki': '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="8" r="2"/><circle cx="12" cy="8" r="2"/><circle cx="19" cy="8" r="2"/><circle cx="5" cy="16" r="2"/><circle cx="12" cy="16" r="2"/><circle cx="19" cy="16" r="2"/></svg>',
+    'siatka': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>',
+  };
+
   for (const w of widoki) {
     const btn = document.createElement('button');
     btn.className = 'widok-btn' + (aktualnyWidok === w.id ? ' aktywny' : '');
-    btn.textContent = w.label;
+    btn.innerHTML = IKONY[w.id] || w.label;
+    btn.setAttribute('aria-label', w.label);
+    btn.title = w.label;
     btn.addEventListener('click', () => {
       aktualnyWidok = w.id;
       localStorage.setItem('sdj_widok', w.id);

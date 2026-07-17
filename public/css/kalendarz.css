@@ -70,14 +70,23 @@
 }
 
 .widok-btn {
-  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
   border: 1px solid var(--divider-color);
-  border-radius: 20px;
+  border-radius: 8px;
   background: transparent;
   color: var(--text-color);
-  font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.widok-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 
 .widok-btn.aktywny {
