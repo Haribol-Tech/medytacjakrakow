@@ -136,8 +136,9 @@ async function zaladujIRenderuj(terminParam = null) {
 function pokazSkeleton() {
   el.skeleton.hidden = false;
   el.blad.hidden = true;
-  el.content.innerHTML = '';
-  el.content.appendChild(el.skeleton);
+  // Ukryj widok lista (nie czyść innerHTML — WidokLista jest w DOM)
+  const wl = document.getElementById('widok-lista');
+  if (wl) wl.hidden = true;
 }
 
 function pokazBlad() {
@@ -165,8 +166,9 @@ function renderuj(terminy, terminParam = null) {
     ? terminy.filter(t => t.kategoriaNazwa === aktualnaKategoria)
     : terminy;
 
-  // Renderuj odpowiedni widok
-  el.content.innerHTML = '';
+  // Ukryj wszystkie widoki przed renderowaniem właściwego
+  const wl = document.getElementById('widok-lista');
+  if (wl) wl.hidden = true;
 
   if (aktualnyWidok === 'lista') {
     renderujListe(przefiltrowane, terminParam);
@@ -432,6 +434,51 @@ function renderujInfoMiejsca(termin) {
 
 // renderujPrzyciskWiecejInfo i renderujPrzyciskZapisu zastąpione przez ustawPrzyciskAkcji w tworzKarte()
 
+// Pomocnicze — tworzą przyciski jako elementy DOM (dla widoków kropki i siatki)
+function tworzBtnInfo(termin) {
+  const btn = document.createElement('a');
+  btn.className = 'btn-wiecej-info';
+  btn.textContent = 'Informacje';
+  if (termin.slug) {
+    if (OPIS_ZAJEC_TRYB === 'podstrona') {
+      btn.href = '/' + termin.slug + '/?termin=' + encodeURIComponent(termin.id);
+    } else {
+      btn.href = '#';
+      btn.addEventListener('click', (e) => { e.preventDefault(); pokazOpisModal(termin.slug, termin.id); });
+    }
+  }
+  return btn;
+}
+
+function tworzBtnAkcji(termin) {
+  if (termin.odwolane) return null;
+  if (termin.zapisy === 'nieaktywne') {
+    const span = document.createElement('span');
+    span.className = 'karta-bez-zapisow';
+    span.textContent = 'Bez zapisów';
+    return span;
+  }
+  const wolne = termin.wolneMiejsca ?? termin.limitMiejsc;
+  const wolneRez = termin.wolneMiejscaRezerwowe ?? termin.limitRezerwowych;
+  if (wolne > 0) {
+    const btn = document.createElement('button');
+    btn.className = 'btn-akcja btn-zapisz';
+    btn.textContent = 'Zapisz się';
+    btn.addEventListener('click', () => otworzModalZapisu(termin.id, false));
+    return btn;
+  } else if (wolneRez > 0) {
+    const btn = document.createElement('button');
+    btn.className = 'btn-akcja btn-rezerwowa';
+    btn.textContent = 'Lista rezerwowa';
+    btn.addEventListener('click', () => otworzModalZapisu(termin.id, true));
+    return btn;
+  }
+  const span = document.createElement('span');
+  span.className = 'karta-zapisy-zamkniete';
+  span.textContent = 'Zapisy zamknięte';
+  return span;
+}
+
 /* ============================================================
    WIDOK KROPKI (mobile)
    ============================================================ */
@@ -544,17 +591,33 @@ function renderujPanelDzienny(panel, terminy, dataStr) {
     const nazwaInfo = pobierzNazwe(termin.slug);
     const miniKarta = document.createElement('div');
     miniKarta.className = 'mini-karta';
-    miniKarta.innerHTML = `
-      <div class="mini-karta-kropka" style="background:${termin.kategoriaKolor || 'var(--accent-secondary-color)'}"></div>
-      <div class="mini-karta-info">
-        <div class="mini-karta-nazwa">${nazwaInfo.nazwa}</div>
-        <div class="mini-karta-godzina">${termin.godzinaStart || ''}${termin.godzinaKoniec ? '–' + termin.godzinaKoniec : ''}</div>
-        <div class="mini-karta-stopka">
-          ${renderujPrzyciskWiecejInfo(termin)}
-          ${renderujPrzyciskZapisu(termin)}
-        </div>
-      </div>
-    `;
+
+    const kropka = document.createElement('div');
+    kropka.className = 'mini-karta-kropka';
+    kropka.style.background = termin.kategoriaKolor || 'var(--accent-secondary-color)';
+    miniKarta.appendChild(kropka);
+
+    const info = document.createElement('div');
+    info.className = 'mini-karta-info';
+
+    const nazwa = document.createElement('div');
+    nazwa.className = 'mini-karta-nazwa';
+    nazwa.textContent = nazwaInfo.nazwa;
+    info.appendChild(nazwa);
+
+    const godz = document.createElement('div');
+    godz.className = 'mini-karta-godzina';
+    godz.textContent = (termin.godzinaStart || '') + (termin.godzinaKoniec ? '–' + termin.godzinaKoniec : '');
+    info.appendChild(godz);
+
+    const stopka = document.createElement('div');
+    stopka.className = 'mini-karta-stopka';
+    stopka.appendChild(tworzBtnInfo(termin));
+    const btnAkcji = tworzBtnAkcji(termin);
+    if (btnAkcji) stopka.appendChild(btnAkcji);
+    info.appendChild(stopka);
+
+    miniKarta.appendChild(info);
     panel.appendChild(miniKarta);
   }
 }
@@ -661,17 +724,43 @@ function pokazPanelSiatki(panel, termin) {
   const adres = termin.miejsceNazwa || 'ul. Starowiślna 20/5, Kraków';
 
   panel.className = 'siatka-panel-detali widoczny';
-  panel.innerHTML = `
-    <h3 class="siatka-panel-nazwa">${nazwaInfo.nazwa}</h3>
-    <div class="siatka-panel-info">${formatujDate(termin.data)}, ${termin.godzinaStart || ''}${termin.godzinaKoniec ? '–' + termin.godzinaKoniec : ''}</div>
-    <div class="siatka-panel-info">${adres}</div>
-    ${termin.prowadzacy?.length ? `<div class="siatka-panel-info">${termin.prowadzacy.join(', ')}</div>` : ''}
-    ${termin.odwolane ? `<div style="color:var(--error-color);font-size:0.85rem;font-weight:600;margin-top:4px">Odwołane</div>` : ''}
-    <div class="siatka-panel-stopka">
-      ${renderujPrzyciskWiecejInfo(termin)}
-      ${renderujPrzyciskZapisu(termin)}
-    </div>
-  `;
+  panel.innerHTML = '';
+
+  const pNazwa = document.createElement('h3');
+  pNazwa.className = 'siatka-panel-nazwa';
+  pNazwa.textContent = nazwaInfo.nazwa;
+  panel.appendChild(pNazwa);
+
+  const pData = document.createElement('div');
+  pData.className = 'siatka-panel-info';
+  pData.textContent = formatujDate(termin.data) + ', ' + (termin.godzinaStart || '') + (termin.godzinaKoniec ? '–' + termin.godzinaKoniec : '');
+  panel.appendChild(pData);
+
+  const pAdres = document.createElement('div');
+  pAdres.className = 'siatka-panel-info';
+  pAdres.textContent = adres;
+  panel.appendChild(pAdres);
+
+  if (termin.prowadzacy?.length) {
+    const pProw = document.createElement('div');
+    pProw.className = 'siatka-panel-info';
+    pProw.textContent = termin.prowadzacy.join(', ');
+    panel.appendChild(pProw);
+  }
+
+  if (termin.odwolane) {
+    const pOdw = document.createElement('div');
+    pOdw.style.cssText = 'color:var(--error-color);font-size:0.85rem;font-weight:600;margin-top:4px';
+    pOdw.textContent = 'Odwołane';
+    panel.appendChild(pOdw);
+  }
+
+  const pStopka = document.createElement('div');
+  pStopka.className = 'siatka-panel-stopka';
+  pStopka.appendChild(tworzBtnInfo(termin));
+  const btnAkcji = tworzBtnAkcji(termin);
+  if (btnAkcji) pStopka.appendChild(btnAkcji);
+  panel.appendChild(pStopka);
 
   panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
