@@ -309,28 +309,21 @@
   gap: 8px;
   align-items: center;
   margin-left: auto;
-  flex-wrap: wrap;
 }
 
 .btn-wiecej-info {
-  padding: 9px 16px;
+  padding: 8px 12px;
   border: 1px solid var(--accent-color);
   border-radius: 4px;
   background: transparent;
   color: var(--accent-color);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   cursor: pointer;
   text-decoration: none;
   transition: all 0.2s;
-  display: block;
+  display: inline-block;
   text-align: center;
-}
-
-@media (min-width: 480px) {
-  .btn-wiecej-info {
-    display: inline-block;
-    text-align: left;
-  }
+  white-space: nowrap;
 }
 
 .btn-wiecej-info:hover {
@@ -338,49 +331,35 @@
   color: var(--white-color);
 }
 
-.btn-zapisz {
-  padding: 9px 16px;
+.btn-akcja.btn-zapisz {
+  padding: 8px 14px;
   border: 1px solid var(--accent-color);
   border-radius: 4px;
   background: var(--accent-color);
   color: var(--white-color);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   cursor: pointer;
   transition: all 0.2s;
-  width: 100%;
-  text-align: center;
+  white-space: nowrap;
 }
 
-@media (min-width: 480px) {
-  .btn-zapisz {
-    width: auto;
-  }
-}
-
-.btn-zapisz:hover {
+.btn-akcja.btn-zapisz:hover {
   opacity: 0.85;
 }
 
-.btn-rezerwowa {
-  padding: 9px 16px;
+.btn-akcja.btn-rezerwowa {
+  padding: 8px 14px;
   border: 1px solid var(--text-color);
   border-radius: 4px;
   background: transparent;
   color: var(--text-color);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   cursor: pointer;
   transition: all 0.2s;
-  width: 100%;
-  text-align: center;
+  white-space: nowrap;
 }
 
-@media (min-width: 480px) {
-  .btn-rezerwowa {
-    width: auto;
-  }
-}
-
-.btn-rezerwowa:hover {
+.btn-akcja.btn-rezerwowa:hover {
   border-color: var(--primary-color);
   color: var(--primary-color);
 }
@@ -517,16 +496,10 @@
 
 .mini-karta-stopka {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  gap: 8px;
   margin-top: 8px;
-}
-
-@media (min-width: 480px) {
-  .mini-karta-stopka {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
+  flex-wrap: wrap;
 }
 
 /* ---- WIDOK SIATKA (desktop) ---- */

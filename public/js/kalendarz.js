@@ -4,7 +4,7 @@
 
 /* ---- Stałe konfiguracyjne ---- */
 const DOMYSLNY_WIDOK = 'lista';         // 'lista' | 'kropki' (mobile) | 'siatka' (desktop)
-const PROG_WYSWIETLANIA_MIEJSC = 40;    // 0 = zawsze pokazuj, 100 = nigdy, 40 = gdy ≥40% zajęte
+const PROG_WYSWIETLANIA_MIEJSC = 0;     // TYMCZASOWO 0 = zawsze pokazuj (docelowo 40)
 const POKAZ_FILTR_KATEGORII = true;     // true | false
 const OPIS_ZAJEC_TRYB = 'podstrona';    // 'podstrona' | 'modal'
 
