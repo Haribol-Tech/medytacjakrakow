@@ -7,11 +7,18 @@ Dokument opisuje wszystkie zatwierdzone decyzje dotyczące interfejsu strony `/k
 ## 1. Struktura plików
 
 ```
-src/pages/kalendarz.astro          — strona /kalendarz/ (shell, buduje słownik nazw)
-src/components/Kalendarz.astro     — główny komponent kalendarza
-public/js/kalendarz.js             — logika UI (widoki, nawigacja, modal)
-public/css/kalendarz.css           — style kalendarza (osobny plik, nie w CSS szablonu)
+src/pages/kalendarz.astro                    — strona /kalendarz/ (shell, buduje słowniki nazw i opisów)
+src/components/Kalendarz.astro               — główny komponent (orkiestrator, importuje widoki)
+src/components/kalendarz/WidokLista.astro    — widok listy + <template> karty zajęć
+src/components/kalendarz/WidokKropki.astro   — widok kropki + panel detali dzienny
+src/components/kalendarz/WidokSiatka.astro   — widok siatki desktop
+src/components/kalendarz/PanelDetali.astro   — panel szczegółów zajęć (desktop, pod/obok siatki)
+src/components/kalendarz/ModalZapisu.astro   — modal formularza zapisu
+public/js/kalendarz.js                       — logika UI (stan, nawigacja, fetch, klonowanie templates)
+public/css/kalendarz.css                     — style kalendarza (osobny plik, nie w CSS szablonu)
 ```
+
+Architektura: każdy widok definiuje strukturę HTML jako `<template>` w Astro. JavaScript klonuje szablony i wypełnia danymi — nie buduje HTML jako string. Logika globalna (stan, nawigacja, fetch) w `kalendarz.js`; logika lokalna każdego widoku docelowo w `<script>` jego komponentu.
 
 Dane pobierane **client-side** przez `fetch('/api/terminy')` przy załadowaniu strony — nie server-side. Uzasadnienie: dane zmieniają się w czasie (cache 60 min po stronie API), strona jest statyczna.
 
@@ -55,15 +62,24 @@ Stała w kodzie: `DOMYSLNY_WIDOK = 'lista'` — możliwe wartości: `'lista'`, `
 - Przy wejściu na stronę lista **przewija się automatycznie do najbliższych nadchodzących zajęć** — jeśli dzisiaj są zajęcia, lista startuje od dzisiaj; jeśli nie ma — od najbliższego dnia z zajęciami w przyszłości; jeśli w tym miesiącu nie ma już nadchodzących — lista startuje od początku miesiąca. Zajęcia z przeszłości w tym miesiącu widoczne po przewinięciu w górę.
 - Poprzedni miesiąc (po kliknięciu strzałki wstecz): lista startuje od początku miesiąca
 
-### Karta zajęć — zawartość
+### Karta zajęć — layout i zawartość
 
-- Pasek koloru kategorii (po lewej stronie karty)
-- Nazwa zajęć
-- Dzień tygodnia + pełna data w dopełniaczu, np. "Środa, 8 lipca" (nie "8 lip.")
-- Godzina start–koniec
-- Adres: domyślnie "ul. Starowiślna 20/5, Kraków"; jeśli inne miejsce — nazwa miejsca z Airtable
-- Prowadzący (jeśli przypisany w harmonogramie)
-- Stopka karty: liczba wolnych miejsc (warunkowa) + dwa przyciski: "Więcej informacji" i przycisk akcji zapisu
+Karta ma pasek koloru kategorii po lewej stronie i body z czterema strefami:
+
+**Nagłówek** (jeden wiersz): badge kategorii (lewy) + pełna data w dopełniaczu np. "Czwartek, 2 lipca" (prawy)
+
+**Nazwa zajęć** — duża, wyraźna
+
+**Szczegóły** — jedna linia z zawijaniem, każdy element poprzedzony ikoną SVG:
+- ikona zegara + godzina start–koniec
+- ikona pinezki + adres (domyślnie "ul. Starowiślna 20/5, Kraków"; jeśli inne — nazwa miejsca z Airtable)
+- ikona osoby + prowadzący (tylko jeśli przypisany; wiersz ukryty gdy brak)
+
+**Separator** (linia pozioma)
+
+**Stopka** (jeden wiersz): liczba wolnych miejsc po lewej (warunkowa, format "Wolne: X / Y") + przyciski po prawej: "Informacje" (secondary) i przycisk akcji zapisu (primary)
+
+Przyciski zawsze w jednej linii obok siebie. `border-radius: 10px` zgodnie z szablonem Restraint.
 
 ### Przyciski na karcie
 
@@ -135,7 +151,7 @@ Wzorowany na Apple Calendar (tryb miesięczny na iPhone).
 
 ### Panel dzienny
 
-Uproszczone karty zajęć (mniejsze niż w widoku lista): kolorowa kropka + nazwa zajęć + godzina + dwa przyciski: "Więcej informacji" i przycisk akcji zapisu. Identyczna logika przycisków jak w widoku lista.
+Karty zajęć z pełnymi informacjami — identyczną zawartością jak karta w widoku lista (badge kategorii, data, nazwa, godzina z ikoną, adres z ikoną, prowadzący z ikoną, separator, stopka z wolnymi miejscami i przyciskami). Implementowane przy tworzeniu `WidokKropki.astro`.
 
 ---
 
@@ -236,3 +252,31 @@ CSS kalendarza używa zmiennych z `public/css/custom.css`:
 | `--error-color` | `rgb(230, 87, 87)` | Tekst "Odwołane", błędy w modalu |
 
 Kolory kategorii zajęć: wartości hex z tabeli `Kategorie` w Airtable — zwracane przez `terminy.js`.
+
+---
+
+## 12. TODO — sticky header dla `/kalendarz/` na mobile
+
+**Problem:** na mobile gdy lista jest długa (koniec miesiąca), użytkownik musi scrollować do góry żeby przełączyć widok (lista ↔ kropki).
+
+**Rozwiązanie:** osobny layout dla strony `/kalendarz/` z kompaktowym sticky headerem łączącym nawigację strony i kalendarza w jednym pasku.
+
+**Zawartość sticky headera:** logo SDJ (klikalne, wraca na stronę główną) + nawigacja miesiąca (prev/next + etykieta) + ikony przełącznika widoków + hamburger menu.
+
+**Zakres:** wymaga stworzenia osobnego layoutu `KalendarzLayout.astro` lub warunkowej modyfikacji `PageLayout.astro`. Docelowo header strony i nagłówek kalendarza to jeden element na mobile.
+
+**Priorytet:** przed launchem — bez tego UX na mobile jest niepełny.
+
+---
+
+## 13. Architektura komponentów — status refaktoryzacji
+
+Docelowy podział (wzorzec `<template>` + klonowanie JS):
+
+| Komponent | Status | Uwagi |
+|---|---|---|
+| `WidokLista.astro` | ✓ zrobione | `<template id="tmpl-karta">` klonowany przez JS |
+| `WidokKropki.astro` | ⏳ w kolejce | Panel dzienny z pełnymi informacjami jak karta listy |
+| `WidokSiatka.astro` | ⏳ w kolejce | `<template>` dla komórki i paska |
+| `PanelDetali.astro` | ⏳ w kolejce | Desktop — pod lub obok siatki (pozycja do ustalenia przy implementacji) |
+| `ModalZapisu.astro` | ⏳ w kolejce | Formularz zapisu z walidacją |
