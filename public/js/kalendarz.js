@@ -136,9 +136,10 @@ async function zaladujIRenderuj(terminParam = null) {
 function pokazSkeleton() {
   el.skeleton.hidden = false;
   el.blad.hidden = true;
-  // Ukryj widok lista (nie czyść innerHTML — WidokLista jest w DOM)
-  const wl = document.getElementById('widok-lista');
-  if (wl) wl.hidden = true;
+  ['widok-lista', 'widok-kropki', 'widok-siatka'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.hidden = true;
+  });
 }
 
 function pokazBlad() {
@@ -166,9 +167,11 @@ function renderuj(terminy, terminParam = null) {
     ? terminy.filter(t => t.kategoriaNazwa === aktualnaKategoria)
     : terminy;
 
-  // Ukryj wszystkie widoki przed renderowaniem właściwego
-  const wl = document.getElementById('widok-lista');
-  if (wl) wl.hidden = true;
+  // Ukryj wszystkie widoki
+  ['widok-lista', 'widok-kropki', 'widok-siatka'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.hidden = true;
+  });
 
   if (aktualnyWidok === 'lista') {
     renderujListe(przefiltrowane, terminParam);
@@ -483,8 +486,10 @@ function tworzBtnAkcji(termin) {
    WIDOK KROPKI (mobile)
    ============================================================ */
 function renderujKropki(terminy) {
-  const wrapper = document.createElement('div');
-  wrapper.className = 'kropki-widok';
+  const wrapper = document.getElementById('widok-kropki');
+  if (!wrapper) return;
+  wrapper.innerHTML = '';
+  wrapper.hidden = false;
 
   // Siatka miesięczna
   const siatka = document.createElement('div');
@@ -626,8 +631,10 @@ function renderujPanelDzienny(panel, terminy, dataStr) {
    WIDOK SIATKA (desktop)
    ============================================================ */
 function renderujSiatke(terminy) {
-  const wrapper = document.createElement('div');
-  wrapper.className = 'siatka-widok';
+  const wrapper = document.getElementById('widok-siatka');
+  if (!wrapper) return;
+  wrapper.innerHTML = '';
+  wrapper.hidden = false;
 
   // Nagłówki dni tygodnia
   const naglowek = document.createElement('div');
@@ -716,7 +723,6 @@ function renderujSiatke(terminy) {
 
   wrapper.appendChild(grid);
   wrapper.appendChild(panel);
-  el.content.appendChild(wrapper);
 }
 
 function pokazPanelSiatki(panel, termin) {

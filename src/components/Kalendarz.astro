@@ -40,9 +40,18 @@ import WidokLista from './kalendarz/WidokLista.astro';
     <p>Nie udało się załadować kalendarza. Spróbuj odświeżyć stronę.</p>
   </div>
 
-  <!-- Obszar zawartości -->
+  <!-- Obszar zawartości — wszystkie widoki w DOM, tylko jeden widoczny -->
   <div id="kalendarz-content" class="kalendarz-content">
+
+    <!-- Widok lista -->
     <WidokLista />
+
+    <!-- Widok kropki (mobile) — wypełniany przez JS -->
+    <div id="widok-kropki" class="kropki-widok" hidden></div>
+
+    <!-- Widok siatka (desktop) — wypełniany przez JS -->
+    <div id="widok-siatka" class="siatka-wrapper" hidden></div>
+
   </div>
 
   <!-- Modal zapisu (bottom sheet) -->
