@@ -218,12 +218,17 @@ function renderujFiltr(terminy) {
    WIDOK LISTA
    ============================================================ */
 function renderujListe(terminy, terminParam = null) {
-  const wrapper = document.createElement('div');
-  wrapper.className = 'lista-widok';
+  const wrapper = document.getElementById('widok-lista');
+  if (!wrapper) return;
+
+  wrapper.innerHTML = '';
+  wrapper.hidden = false;
 
   if (terminy.length === 0) {
-    wrapper.innerHTML = '<p style="color:var(--text-color);text-align:center;padding:40px 0">Brak zajęć w tym miesiącu.</p>';
-    el.content.appendChild(wrapper);
+    const p = document.createElement('p');
+    p.style.cssText = 'color:var(--text-color);text-align:center;padding:40px 0';
+    p.textContent = 'Brak zajęć w tym miesiącu.';
+    wrapper.appendChild(p);
     return;
   }
 
@@ -231,20 +236,20 @@ function renderujListe(terminy, terminParam = null) {
 
   for (const termin of terminy) {
     const karta = tworzKarte(termin);
+    if (!karta) continue;
     wrapper.appendChild(karta);
 
-    // Zaznacz kartę do przewinięcia (termin z URL lub najbliższe zajęcia)
     if (terminParam && termin.id === terminParam) {
       kartaDoSkrolowania = karta;
     }
   }
 
-  el.content.appendChild(wrapper);
-
   // Przewiń do właściwego miejsca
   if (kartaDoSkrolowania) {
-    setTimeout(() => kartaDoSkrolowania.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
-    // Wyczyść parametr z URL bez przeładowania strony
+    setTimeout(() => {
+      const rect = kartaDoSkrolowania.getBoundingClientRect();
+      window.scrollTo({ top: window.scrollY + rect.top - 120, behavior: 'smooth' });
+    }, 150);
     const url = new URL(window.location);
     url.searchParams.delete('termin');
     window.history.replaceState({}, '', url);
@@ -276,32 +281,137 @@ function przewinDoNajblizszych(wrapper, terminy) {
 }
 
 function tworzKarte(termin) {
-  const karta = document.createElement('div');
-  karta.className = 'karta' + (termin.odwolane ? ' odwolane' : '');
+  const tmpl = document.getElementById('tmpl-karta');
+  if (!tmpl) return null;
+
+  const karta = tmpl.content.cloneNode(true).querySelector('.karta');
+  karta.classList.toggle('odwolane', !!termin.odwolane);
   karta.dataset.terminId = termin.id;
 
   const nazwaInfo = pobierzNazwe(termin.slug);
-  const dataFormatowana = formatujDate(termin.data);
   const adres = termin.miejsceNazwa || 'ul. Starowiślna 20/5, Kraków';
 
-  karta.innerHTML = `
-    <div class="karta-kolor" style="background:${termin.kategoriaKolor || 'var(--accent-secondary-color)'}"></div>
-    <div class="karta-body">
-      <h3 class="karta-nazwa">${nazwaInfo.nazwa}</h3>
-      <div class="karta-data">${dataFormatowana}</div>
-      <div class="karta-godzina">${termin.godzinaStart || ''}${termin.godzinaKoniec ? '–' + termin.godzinaKoniec : ''}</div>
-      <div class="karta-miejsce">${adres}</div>
-      ${termin.prowadzacy?.length ? `<div class="karta-prowadzacy">${termin.prowadzacy.join(', ')}</div>` : ''}
-      ${termin.odwolane ? '<div class="karta-odwolane-etykieta">Odwołane</div>' : ''}
-      ${renderujInfoMiejsca(termin)}
-      <div class="karta-stopka">
-        ${renderujPrzyciskWiecejInfo(termin)}
-        ${renderujPrzyciskZapisu(termin)}
-      </div>
-    </div>
-  `;
+  // Pasek koloru
+  karta.querySelector('.karta-pasek').style.background =
+    termin.kategoriaKolor || 'var(--accent-secondary-color)';
+
+  // Badge kategorii — kolor tła lekko rozbity z koloru kategorii
+  const badge = karta.querySelector('.karta-badge');
+  badge.textContent = termin.kategoriaNazwa || '';
+  if (termin.kategoriaKolor) {
+    badge.style.background = termin.kategoriaKolor + '22'; // 13% opacity
+    badge.style.color = termin.kategoriaKolor;
+  }
+
+  // Data
+  karta.querySelector('.karta-data').textContent = formatujDate(termin.data);
+
+  // Nazwa
+  karta.querySelector('.karta-nazwa').textContent = nazwaInfo.nazwa;
+
+  // Godzina
+  const godz = termin.godzinaStart || '';
+  const koniec = termin.godzinaKoniec ? '–' + termin.godzinaKoniec : '';
+  karta.querySelector('.karta-godzina').textContent = godz + koniec;
+
+  // Adres
+  karta.querySelector('.karta-miejsce').textContent = adres;
+
+  // Prowadzący
+  const prowWiersz = karta.querySelector('.karta-prowadzacy-wiersz');
+  if (termin.prowadzacy?.length) {
+    prowWiersz.hidden = false;
+    prowWiersz.querySelector('.karta-prowadzacy').textContent = termin.prowadzacy.join(', ');
+  }
+
+  // Odwołane
+  const odwInfo = karta.querySelector('.karta-odwolane-info');
+  if (termin.odwolane) {
+    odwInfo.hidden = false;
+    if (termin.powodOdwolania) {
+      odwInfo.querySelector('.karta-odwolane-tekst').textContent =
+        'Odwołane — ' + termin.powodOdwolania;
+    }
+  }
+
+  // Wolne miejsca
+  const miejscaEl = karta.querySelector('.karta-miejsca');
+  const infoMiejsca = obliczInfoMiejsca(termin);
+  if (infoMiejsca) {
+    miejscaEl.textContent = infoMiejsca;
+    miejscaEl.hidden = false;
+  }
+
+  // Przycisk "Więcej informacji"
+  const btnInfo = karta.querySelector('.btn-wiecej-info');
+  if (termin.slug) {
+    if (OPIS_ZAJEC_TRYB === 'podstrona') {
+      btnInfo.href = '/' + termin.slug + '/?termin=' + encodeURIComponent(termin.id);
+    } else {
+      btnInfo.href = '#';
+      btnInfo.addEventListener('click', (e) => {
+        e.preventDefault();
+        pokazOpisModal(termin.slug, termin.id);
+      });
+    }
+  }
+
+  // Przycisk akcji zapisu
+  const btnAkcja = karta.querySelector('.btn-akcja');
+  ustawPrzyciskAkcji(btnAkcja, termin);
 
   return karta;
+}
+
+function obliczInfoMiejsca(termin) {
+  if (termin.odwolane || termin.zapisy === 'nieaktywne') return null;
+  if (PROG_WYSWIETLANIA_MIEJSC === 100) return null;
+
+  const wolne = termin.wolneMiejsca ?? termin.limitMiejsc;
+  const zajete = (termin.limitMiejsc || 0) - wolne;
+  const procent = termin.limitMiejsc > 0 ? (zajete / termin.limitMiejsc) * 100 : 0;
+
+  if (PROG_WYSWIETLANIA_MIEJSC === 0 || procent >= PROG_WYSWIETLANIA_MIEJSC) {
+    if (wolne > 0) return `Wolne: ${wolne}`;
+  }
+  return null;
+}
+
+function ustawPrzyciskAkcji(btn, termin) {
+  if (termin.odwolane) {
+    btn.remove();
+    return;
+  }
+
+  if (termin.zapisy === 'nieaktywne') {
+    btn.replaceWith((() => {
+      const span = document.createElement('span');
+      span.className = 'karta-bez-zapisow';
+      span.textContent = 'Bez zapisów';
+      return span;
+    })());
+    return;
+  }
+
+  const wolne = termin.wolneMiejsca ?? termin.limitMiejsc;
+  const wolneRezerwowe = termin.wolneMiejscaRezerwowe ?? termin.limitRezerwowych;
+
+  if (wolne > 0) {
+    btn.className = 'btn-akcja btn-zapisz';
+    btn.textContent = 'Zapisz się';
+    btn.addEventListener('click', () => otworzModalZapisu(termin.id, false));
+  } else if (wolneRezerwowe > 0) {
+    btn.className = 'btn-akcja btn-rezerwowa';
+    btn.textContent = 'Lista rezerwowa';
+    btn.addEventListener('click', () => otworzModalZapisu(termin.id, true));
+  } else {
+    btn.replaceWith((() => {
+      const span = document.createElement('span');
+      span.className = 'karta-zapisy-zamkniete';
+      span.textContent = 'Zapisy zamknięte';
+      return span;
+    })());
+  }
 }
 
 function renderujInfoMiejsca(termin) {
@@ -320,36 +430,7 @@ function renderujInfoMiejsca(termin) {
   return '';
 }
 
-function renderujPrzyciskWiecejInfo(termin) {
-  const slug = termin.slug;
-  if (!slug) return '';
-
-  if (OPIS_ZAJEC_TRYB === 'podstrona') {
-    const powrotParam = `?termin=${encodeURIComponent(termin.id)}`;
-    return `<a href="/${slug}/${powrotParam}" class="btn-wiecej-info">Więcej informacji</a>`;
-  } else {
-    return `<button class="btn-wiecej-info" onclick="pokazOpisModal('${slug}', '${termin.id}')">Więcej informacji</button>`;
-  }
-}
-
-function renderujPrzyciskZapisu(termin) {
-  if (termin.odwolane) return '';
-
-  if (termin.zapisy === 'nieaktywne') {
-    return '<span class="karta-bez-zapisow">Bez zapisów</span>';
-  }
-
-  const wolne = termin.wolneMiejsca ?? termin.limitMiejsc;
-  const wolneRezerwowe = termin.wolneMiejscaRezerwowe ?? termin.limitRezerwowych;
-
-  if (wolne > 0) {
-    return `<button class="btn-zapisz" onclick="otworzModalZapisu('${termin.id}', false)">Zapisz się</button>`;
-  } else if (wolneRezerwowe > 0) {
-    return `<button class="btn-rezerwowa" onclick="otworzModalZapisu('${termin.id}', true)">Lista rezerwowa</button>`;
-  } else {
-    return '<span class="karta-zapisy-zamkniete">Zapisy zamknięte</span>';
-  }
-}
+// renderujPrzyciskWiecejInfo i renderujPrzyciskZapisu zastąpione przez ustawPrzyciskAkcji w tworzKarte()
 
 /* ============================================================
    WIDOK KROPKI (mobile)

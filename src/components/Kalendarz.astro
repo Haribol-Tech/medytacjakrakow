@@ -1,9 +1,6 @@
 ---
-// Komponent kalendarza — shell HTML
-// Logika UI w public/js/kalendarz.js
-// Style w public/css/kalendarz.css
+import WidokLista from './kalendarz/WidokLista.astro';
 ---
-
 
 <!-- Pomocniczy element do detekcji mobile przez CSS -->
 <div id="mobile-detector" class="mobile-detector"></div>
@@ -25,27 +22,27 @@
         </svg>
       </button>
     </div>
-    <div id="kalendarz-widok-przelacznik" class="kalendarz-widok-przelacznik">
-      <!-- Przyciski przełącznika widoku wstrzykiwane przez JS (zależą od rozmiaru ekranu) -->
-    </div>
+    <div id="kalendarz-widok-przelacznik" class="kalendarz-widok-przelacznik"></div>
   </div>
 
-  <!-- Filtr kategorii (pillsy) — wstrzykiwany przez JS gdy POKAZ_FILTR_KATEGORII = true -->
+  <!-- Filtr kategorii (pillsy) -->
   <div id="kalendarz-filtr" class="kalendarz-filtr" hidden></div>
 
-  <!-- Obszar zawartości — skeleton / widok lista / widok kropki / widok siatka -->
-  <div id="kalendarz-content" class="kalendarz-content">
-    <!-- Skeleton loader (pokazywany podczas ładowania) -->
-    <div id="kalendarz-skeleton" class="kalendarz-skeleton">
-      <div class="skeleton-karta"></div>
-      <div class="skeleton-karta"></div>
-      <div class="skeleton-karta"></div>
-    </div>
+  <!-- Skeleton loader -->
+  <div id="kalendarz-skeleton" class="kalendarz-skeleton" hidden>
+    <div class="skeleton-karta"></div>
+    <div class="skeleton-karta"></div>
+    <div class="skeleton-karta"></div>
   </div>
 
-  <!-- Komunikat błędu (ukryty domyślnie) -->
+  <!-- Komunikat błędu -->
   <div id="kalendarz-blad" class="kalendarz-blad" hidden>
     <p>Nie udało się załadować kalendarza. Spróbuj odświeżyć stronę.</p>
+  </div>
+
+  <!-- Obszar zawartości -->
+  <div id="kalendarz-content" class="kalendarz-content">
+    <WidokLista />
   </div>
 
   <!-- Modal zapisu (bottom sheet) -->
@@ -60,11 +57,8 @@
           </svg>
         </button>
       </div>
-      <div id="zapis-modal-body" class="zapis-modal-body">
-        <!-- Zawartość wstrzykiwana przez JS: formularz / sukces / błąd -->
-      </div>
+      <div id="zapis-modal-body" class="zapis-modal-body"></div>
     </div>
   </div>
 
 </div>
-

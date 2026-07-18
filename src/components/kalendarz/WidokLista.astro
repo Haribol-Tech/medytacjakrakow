@@ -1,0 +1,77 @@
+---
+// WidokLista.astro — widok listy kalendarza
+// Zawiera <template> karty zajęć wypełniany przez widok-lista.js
+---
+
+<div id="widok-lista" class="lista-widok" hidden>
+  <!-- Karty zajęć wstrzykiwane przez JS -->
+</div>
+
+<!-- Template karty zajęć — klonowany przez JS dla każdego terminu -->
+<template id="tmpl-karta">
+  <article class="karta" data-termin-id="">
+
+    <!-- Pasek koloru kategorii -->
+    <div class="karta-pasek"></div>
+
+    <div class="karta-body">
+
+      <!-- Nagłówek karty: badge kategorii + data -->
+      <div class="karta-naglowek">
+        <span class="karta-badge"></span>
+        <span class="karta-data"></span>
+      </div>
+
+      <!-- Nazwa zajęć -->
+      <h3 class="karta-nazwa"></h3>
+
+      <!-- Szczegóły: godzina, adres, prowadzący -->
+      <div class="karta-szczegoly">
+        <div class="karta-wiersz karta-godzina-wiersz">
+          <svg class="karta-ikona" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span class="karta-godzina"></span>
+        </div>
+        <div class="karta-wiersz karta-miejsce-wiersz">
+          <svg class="karta-ikona" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          <span class="karta-miejsce"></span>
+        </div>
+        <div class="karta-wiersz karta-prowadzacy-wiersz" hidden>
+          <svg class="karta-ikona" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <span class="karta-prowadzacy"></span>
+        </div>
+      </div>
+
+      <!-- Etykieta odwołania (ukryta domyślnie) -->
+      <div class="karta-odwolane-info" hidden>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+        <span class="karta-odwolane-tekst">Odwołane</span>
+      </div>
+
+      <!-- Separator -->
+      <div class="karta-separator"></div>
+
+      <!-- Stopka: wolne miejsca + przyciski -->
+      <div class="karta-stopka">
+        <span class="karta-miejsca" hidden></span>
+        <div class="karta-przyciski">
+          <a class="btn-wiecej-info" href="#">Informacje</a>
+          <button class="btn-akcja" type="button"></button>
+        </div>
+      </div>
+
+    </div>
+  </article>
+</template>
