@@ -314,7 +314,7 @@
 .btn-wiecej-info {
   padding: 8px 12px;
   border: 1px solid var(--accent-color);
-  border-radius: 4px;
+  border-radius: 10px;
   background: transparent;
   color: var(--accent-color);
   font-size: 0.82rem;
@@ -334,7 +334,7 @@
 .btn-akcja.btn-zapisz {
   padding: 8px 14px;
   border: 1px solid var(--accent-color);
-  border-radius: 4px;
+  border-radius: 10px;
   background: var(--accent-color);
   color: var(--white-color);
   font-size: 0.82rem;
@@ -350,7 +350,7 @@
 .btn-akcja.btn-rezerwowa {
   padding: 8px 14px;
   border: 1px solid var(--text-color);
-  border-radius: 4px;
+  border-radius: 10px;
   background: transparent;
   color: var(--text-color);
   font-size: 0.82rem;

@@ -377,7 +377,7 @@ function obliczInfoMiejsca(termin) {
   const procent = termin.limitMiejsc > 0 ? (zajete / termin.limitMiejsc) * 100 : 0;
 
   if (PROG_WYSWIETLANIA_MIEJSC === 0 || procent >= PROG_WYSWIETLANIA_MIEJSC) {
-    if (wolne > 0) return `Wolne: ${wolne}`;
+    if (wolne > 0) return `Wolne: ${wolne} / ${termin.limitMiejsc}`;
   }
   return null;
 }
