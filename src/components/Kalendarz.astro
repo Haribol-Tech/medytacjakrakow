@@ -1,5 +1,6 @@
 ---
 import WidokLista from './kalendarz/WidokLista.astro';
+import WidokKropki from './kalendarz/WidokKropki.astro';
 ---
 
 <!-- Pomocniczy element do detekcji mobile przez CSS -->
@@ -46,8 +47,8 @@ import WidokLista from './kalendarz/WidokLista.astro';
     <!-- Widok lista -->
     <WidokLista />
 
-    <!-- Widok kropki (mobile) — wypełniany przez JS -->
-    <div id="widok-kropki" class="kropki-widok" hidden></div>
+    <!-- Widok kropki (mobile) -->
+    <WidokKropki />
 
     <!-- Widok siatka (desktop) — wypełniany przez JS -->
     <div id="widok-siatka" class="siatka-wrapper" hidden></div>

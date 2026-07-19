@@ -1,0 +1,106 @@
+---
+// WidokKropki.astro — widok kropki (mobile)
+// Zawiera <template> siatki miesięcznej i mini-karty wypełniane przez JS
+---
+
+<div id="widok-kropki" class="kropki-widok" hidden>
+
+  <!-- Siatka miesięczna (górna część, stała) -->
+  <div class="kropki-siatka-wrapper">
+    <div class="kropki-siatka" id="kropki-siatka">
+      <!-- Nagłówki dni tygodnia — statyczne, 7 kolumn -->
+      <div class="kropki-naglowek-dzien">Pn</div>
+      <div class="kropki-naglowek-dzien">Wt</div>
+      <div class="kropki-naglowek-dzien">Śr</div>
+      <div class="kropki-naglowek-dzien">Czw</div>
+      <div class="kropki-naglowek-dzien">Pt</div>
+      <div class="kropki-naglowek-dzien">Sb</div>
+      <div class="kropki-naglowek-dzien">Nd</div>
+      <!-- Komórki dni wstrzykiwane przez JS bezpośrednio do siatki -->
+    </div>
+  </div>
+
+  <!-- Legenda kategorii — wypełniana przez JS -->
+  <div id="kropki-legenda" class="kropki-legenda"></div>
+
+  <!-- Panel detali dzienny — wypełniany przez JS -->
+  <div id="kropki-panel" class="kropki-panel">
+    <div id="kropki-panel-data" class="kropki-panel-data"></div>
+    <div id="kropki-panel-karty" class="kropki-panel-karty"></div>
+  </div>
+
+</div>
+
+<!-- Template komórki dnia w siatce -->
+<template id="tmpl-komorka">
+  <div class="kropki-komorka" data-data="">
+    <div class="kropki-dzien-num"></div>
+    <div class="kropki-dots"></div>
+  </div>
+</template>
+
+<!-- Template mini-karty w panelu detali -->
+<template id="tmpl-mini-karta">
+  <article class="mini-karta" data-termin-id="">
+
+    <!-- Pasek koloru kategorii -->
+    <div class="mini-karta-pasek"></div>
+
+    <div class="mini-karta-body">
+
+      <!-- Nagłówek: nazwa zajęć + data -->
+      <div class="mini-karta-naglowek">
+        <h3 class="mini-karta-nazwa"></h3>
+        <span class="mini-karta-data"></span>
+      </div>
+
+      <!-- Szczegóły: godzina, adres, prowadzący -->
+      <div class="mini-karta-szczegoly">
+        <div class="mini-karta-wiersz mini-karta-godzina-wiersz">
+          <svg class="mini-karta-ikona" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span class="mini-karta-godzina"></span>
+        </div>
+        <div class="mini-karta-wiersz mini-karta-miejsce-wiersz">
+          <svg class="mini-karta-ikona" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          <span class="mini-karta-miejsce"></span>
+        </div>
+        <div class="mini-karta-wiersz mini-karta-prowadzacy-wiersz" hidden>
+          <svg class="mini-karta-ikona" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <span class="mini-karta-prowadzacy"></span>
+        </div>
+      </div>
+
+      <!-- Etykieta odwołania -->
+      <div class="mini-karta-odwolane-info" hidden>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+        <span class="mini-karta-odwolane-tekst">Odwołane</span>
+      </div>
+
+      <!-- Separator -->
+      <div class="mini-karta-separator"></div>
+
+      <!-- Stopka: wolne miejsca + przyciski -->
+      <div class="mini-karta-stopka">
+        <span class="mini-karta-miejsca" hidden></span>
+        <div class="mini-karta-przyciski">
+          <a class="btn-wiecej-info" href="#">Informacje</a>
+          <button class="btn-akcja" type="button"></button>
+        </div>
+      </div>
+
+    </div>
+  </article>
+</template>

@@ -488,36 +488,30 @@ function tworzBtnAkcji(termin) {
 function renderujKropki(terminy) {
   const wrapper = document.getElementById('widok-kropki');
   if (!wrapper) return;
-  wrapper.innerHTML = '';
   wrapper.hidden = false;
 
-  // Siatka miesięczna
-  const siatka = document.createElement('div');
-  siatka.className = 'kropki-siatka';
+  const tmplKomorka = document.getElementById('tmpl-komorka');
+  const legendaEl = document.getElementById('kropki-legenda');
+  const panelKarty = document.getElementById('kropki-panel-karty');
+  const panelData = document.getElementById('kropki-panel-data');
+  const siatka = document.getElementById('kropki-siatka');
 
-  // Nagłówki dni tygodnia (Pn-Nd)
-  const dniKolejnosc = ['Pn','Wt','Śr','Czw','Pt','Sb','Nd'];
-  for (const dzien of dniKolejnosc) {
-    const h = document.createElement('div');
-    h.className = 'kropki-naglowek-dzien';
-    h.textContent = dzien;
-    siatka.appendChild(h);
-  }
+  if (!tmplKomorka || !siatka) return;
+
+  // Wyczyść poprzednie komórki dni (zachowaj nagłówki — pierwsze 7 dzieci)
+  const dzieci = Array.from(siatka.children);
+  dzieci.slice(7).forEach(d => d.remove());
+  if (legendaEl) legendaEl.innerHTML = '';
+  if (panelKarty) panelKarty.innerHTML = '';
+  if (panelData) panelData.textContent = '';
 
   // Komórki dni
   const pierwszyDzien = new Date(aktualnyRok, aktualnyMiesiac - 1, 1);
   const ostatniDzien = new Date(aktualnyRok, aktualnyMiesiac, 0).getDate();
-  // Dostosuj: w JS 0=Nd, chcemy 0=Pn
   let startOffset = pierwszyDzien.getDay() - 1;
   if (startOffset < 0) startOffset = 6;
 
-  // Puste komórki przed pierwszym dniem
-  for (let i = 0; i < startOffset; i++) {
-    siatka.appendChild(document.createElement('div'));
-  }
-
-  const dzisiaj = new Date();
-  const dzisiajStr = dzisiaj.toISOString().slice(0, 10);
+  const dzisiajStr = new Date().toISOString().slice(0, 10);
 
   // Grupuj terminy po dacie
   const terminyPerDzien = {};
@@ -526,104 +520,148 @@ function renderujKropki(terminy) {
     terminyPerDzien[t.data].push(t);
   }
 
-  // Panel dzienny
-  const panel = document.createElement('div');
-  panel.className = 'kropki-panel-dzienny';
+  // Legenda kategorii
+  if (legendaEl) {
+    const kategorie = new Map();
+    for (const t of terminy) {
+      if (t.kategoriaNazwa && !kategorie.has(t.kategoriaNazwa)) {
+        kategorie.set(t.kategoriaNazwa, t.kategoriaKolor || 'var(--accent-secondary-color)');
+      }
+    }
+    for (const [nazwa, kolor] of kategorie) {
+      const item = document.createElement('div');
+      item.className = 'kropki-legenda-item';
+      item.innerHTML = `<span class="kropki-legenda-dot" style="background:${kolor}"></span><span class="kropki-legenda-nazwa">${nazwa}</span>`;
+      legendaEl.appendChild(item);
+    }
+  }
+
+  // Puste komórki przed pierwszym dniem
+  for (let i = 0; i < startOffset; i++) {
+    siatka.appendChild(document.createElement('div'));
+  }
 
   let aktywnaData = null;
+  let aktywnaKomorka = null;
 
   for (let d = 1; d <= ostatniDzien; d++) {
     const dataStr = `${aktualnyRok}-${String(aktualnyMiesiac).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     const termineDnia = terminyPerDzien[dataStr] ?? [];
     const maDnia = termineDnia.length > 0;
 
-    const komorka = document.createElement('div');
-    komorka.className = 'kropki-komorka' + (maDnia ? ' ma-zajecia' : '') + (dataStr === dzisiajStr ? ' dzisiaj' : '');
+    // Klonuj template komórki
+    const komorka = tmplKomorka.content.cloneNode(true).querySelector('.kropki-komorka');
     komorka.dataset.data = dataStr;
+    komorka.classList.toggle('ma-zajecia', maDnia);
+    komorka.classList.toggle('dzisiaj', dataStr === dzisiajStr);
 
-    const num = document.createElement('div');
-    num.className = 'kropki-dzien-num';
-    num.textContent = d;
-    komorka.appendChild(num);
+    komorka.querySelector('.kropki-dzien-num').textContent = d;
 
     if (maDnia) {
-      const dots = document.createElement('div');
-      dots.className = 'kropki-dots';
+      const dots = komorka.querySelector('.kropki-dots');
       for (const t of termineDnia) {
         const dot = document.createElement('div');
         dot.className = 'kropka';
         dot.style.background = t.kategoriaKolor || 'var(--accent-secondary-color)';
         dots.appendChild(dot);
       }
-      komorka.appendChild(dots);
 
       komorka.addEventListener('click', () => {
-        // Usuń aktywną klasę z poprzedniej
-        siatka.querySelectorAll('.aktywna').forEach(el => el.classList.remove('aktywna'));
+        if (aktywnaKomorka) aktywnaKomorka.classList.remove('aktywna');
         komorka.classList.add('aktywna');
+        aktywnaKomorka = komorka;
         aktywnaData = dataStr;
-        renderujPanelDzienny(panel, termineDnia, dataStr);
+        renderujPanelDzienny(panelKarty, panelData, termineDnia, dataStr);
       });
+
+      // Domyślnie aktywny — dzisiaj lub najbliższy z zajęciami
+      if (!aktywnaData && dataStr >= dzisiajStr) {
+        aktywnaData = dataStr;
+        aktywnaKomorka = komorka;
+        komorka.classList.add('aktywna');
+      }
     }
 
     siatka.appendChild(komorka);
-
-    // Ustaw domyślnie aktywny dzień (dzisiaj lub najbliższy z zajęciami)
-    if (!aktywnaData && maDnia && dataStr >= dzisiajStr) {
-      aktywnaData = dataStr;
-      komorka.classList.add('aktywna');
-    }
   }
-
-  wrapper.appendChild(siatka);
-  wrapper.appendChild(panel);
-  el.content.appendChild(wrapper);
 
   // Renderuj panel dla domyślnego dnia
   if (aktywnaData && terminyPerDzien[aktywnaData]) {
-    renderujPanelDzienny(panel, terminyPerDzien[aktywnaData], aktywnaData);
+    renderujPanelDzienny(panelKarty, panelData, terminyPerDzien[aktywnaData], aktywnaData);
   }
 }
 
-function renderujPanelDzienny(panel, terminy, dataStr) {
-  panel.innerHTML = '';
-  const naglowek = document.createElement('div');
-  naglowek.style.cssText = 'font-size:0.85rem;color:var(--text-color);margin-bottom:8px;';
-  naglowek.textContent = formatujDate(dataStr);
-  panel.appendChild(naglowek);
+function renderujPanelDzienny(panelKarty, panelData, terminy, dataStr) {
+  if (!panelKarty) return;
+  panelKarty.innerHTML = '';
+  if (panelData) panelData.textContent = '';
+
+  const tmpl = document.getElementById('tmpl-mini-karta');
+  if (!tmpl) return;
 
   for (const termin of terminy) {
     const nazwaInfo = pobierzNazwe(termin.slug);
-    const miniKarta = document.createElement('div');
-    miniKarta.className = 'mini-karta';
+    const adres = termin.miejsceNazwa || 'ul. Starowiślna 20/5, Kraków';
 
-    const kropka = document.createElement('div');
-    kropka.className = 'mini-karta-kropka';
-    kropka.style.background = termin.kategoriaKolor || 'var(--accent-secondary-color)';
-    miniKarta.appendChild(kropka);
+    const karta = tmpl.content.cloneNode(true).querySelector('.mini-karta');
+    karta.classList.toggle('odwolane', !!termin.odwolane);
+    karta.dataset.terminId = termin.id;
 
-    const info = document.createElement('div');
-    info.className = 'mini-karta-info';
+    // Pasek koloru
+    karta.querySelector('.mini-karta-pasek').style.background =
+      termin.kategoriaKolor || 'var(--accent-secondary-color)';
 
-    const nazwa = document.createElement('div');
-    nazwa.className = 'mini-karta-nazwa';
-    nazwa.textContent = nazwaInfo.nazwa;
-    info.appendChild(nazwa);
+    // Nagłówek: nazwa + data
+    karta.querySelector('.mini-karta-nazwa').textContent = nazwaInfo.nazwa;
+    karta.querySelector('.mini-karta-data').textContent = formatujDate(dataStr);
 
-    const godz = document.createElement('div');
-    godz.className = 'mini-karta-godzina';
-    godz.textContent = (termin.godzinaStart || '') + (termin.godzinaKoniec ? '–' + termin.godzinaKoniec : '');
-    info.appendChild(godz);
+    // Godzina
+    const godz = (termin.godzinaStart || '') + (termin.godzinaKoniec ? '–' + termin.godzinaKoniec : '');
+    karta.querySelector('.mini-karta-godzina').textContent = godz;
 
-    const stopka = document.createElement('div');
-    stopka.className = 'mini-karta-stopka';
-    stopka.appendChild(tworzBtnInfo(termin));
-    const btnAkcji = tworzBtnAkcji(termin);
-    if (btnAkcji) stopka.appendChild(btnAkcji);
-    info.appendChild(stopka);
+    // Adres
+    karta.querySelector('.mini-karta-miejsce').textContent = adres;
 
-    miniKarta.appendChild(info);
-    panel.appendChild(miniKarta);
+    // Prowadzący
+    const prowWiersz = karta.querySelector('.mini-karta-prowadzacy-wiersz');
+    if (termin.prowadzacy?.length) {
+      prowWiersz.hidden = false;
+      prowWiersz.querySelector('.mini-karta-prowadzacy').textContent = termin.prowadzacy.join(', ');
+    }
+
+    // Odwołane
+    const odwInfo = karta.querySelector('.mini-karta-odwolane-info');
+    if (termin.odwolane) {
+      odwInfo.hidden = false;
+      if (termin.powodOdwolania) {
+        odwInfo.querySelector('.mini-karta-odwolane-tekst').textContent = 'Odwołane — ' + termin.powodOdwolania;
+      }
+    }
+
+    // Wolne miejsca
+    const miejscaEl = karta.querySelector('.mini-karta-miejsca');
+    const infoMiejsca = obliczInfoMiejsca(termin);
+    if (infoMiejsca) {
+      miejscaEl.textContent = infoMiejsca;
+      miejscaEl.hidden = false;
+    }
+
+    // Przycisk info
+    const btnInfo = karta.querySelector('.btn-wiecej-info');
+    if (termin.slug) {
+      if (OPIS_ZAJEC_TRYB === 'podstrona') {
+        btnInfo.href = '/' + termin.slug + '/?termin=' + encodeURIComponent(termin.id);
+      } else {
+        btnInfo.href = '#';
+        btnInfo.addEventListener('click', (e) => { e.preventDefault(); pokazOpisModal(termin.slug, termin.id); });
+      }
+    }
+
+    // Przycisk akcji
+    const btnAkcja = karta.querySelector('.btn-akcja');
+    ustawPrzyciskAkcji(btnAkcja, termin);
+
+    panelKarty.appendChild(karta);
   }
 }
 
