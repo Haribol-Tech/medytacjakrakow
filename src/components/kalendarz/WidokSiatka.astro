@@ -1,0 +1,117 @@
+---
+// WidokSiatka.astro — widok siatki desktop
+// Zawiera <template> komórki, paska zajęć i panelu detali
+---
+
+<div id="widok-siatka" class="siatka-wrapper" hidden>
+
+  <!-- Nagłówki dni tygodnia — statyczne -->
+  <div class="siatka-naglowek">
+    <div class="siatka-naglowek-dzien">Pn</div>
+    <div class="siatka-naglowek-dzien">Wt</div>
+    <div class="siatka-naglowek-dzien">Śr</div>
+    <div class="siatka-naglowek-dzien">Czw</div>
+    <div class="siatka-naglowek-dzien">Pt</div>
+    <div class="siatka-naglowek-dzien">Sb</div>
+    <div class="siatka-naglowek-dzien">Nd</div>
+  </div>
+
+  <!-- Siatka komórek — wypełniana przez JS -->
+  <div id="siatka-grid" class="siatka-grid"></div>
+
+  <!-- Panel detali — wypełniany przez JS po kliknięciu -->
+  <div id="siatka-panel" class="siatka-panel" hidden></div>
+
+</div>
+
+<!-- Template komórki dnia -->
+<template id="tmpl-komorka-siatki">
+  <div class="siatka-komorka" data-data="">
+    <div class="siatka-dzien-num"></div>
+    <div class="siatka-paski"></div>
+  </div>
+</template>
+
+<!-- Template paska zajęć w komórce -->
+<template id="tmpl-pasek-siatki">
+  <div class="siatka-pasek" data-termin-id="">
+    <span class="siatka-pasek-tekst"></span>
+  </div>
+</template>
+
+<!-- Template panelu detali pod siatką -->
+<template id="tmpl-panel-detali">
+  <div class="panel-detali">
+
+    <!-- Lewa kolumna: dane zajęć -->
+    <div class="panel-detali-lewo">
+
+      <!-- Pasek koloru kategorii -->
+      <div class="panel-detali-pasek"></div>
+
+      <div class="panel-detali-body">
+
+        <!-- Nagłówek: badge + data -->
+        <div class="panel-detali-naglowek">
+          <span class="panel-detali-badge"></span>
+          <span class="panel-detali-data"></span>
+        </div>
+
+        <!-- Nazwa zajęć -->
+        <h3 class="panel-detali-nazwa"></h3>
+
+        <!-- Szczegóły: godzina, adres, prowadzący -->
+        <div class="panel-detali-szczegoly">
+          <div class="panel-detali-wiersz panel-detali-godzina-wiersz">
+            <svg class="panel-detali-ikona" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span class="panel-detali-godzina"></span>
+          </div>
+          <div class="panel-detali-wiersz panel-detali-miejsce-wiersz">
+            <svg class="panel-detali-ikona" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span class="panel-detali-miejsce"></span>
+          </div>
+          <div class="panel-detali-wiersz panel-detali-prowadzacy-wiersz" hidden>
+            <svg class="panel-detali-ikona" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <span class="panel-detali-prowadzacy"></span>
+          </div>
+        </div>
+
+        <!-- Etykieta odwołania -->
+        <div class="panel-detali-odwolane-info" hidden>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="15" y1="9" x2="9" y2="15"/>
+            <line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+          <span class="panel-detali-odwolane-tekst">Odwołane</span>
+        </div>
+
+        <!-- Separator -->
+        <div class="panel-detali-separator"></div>
+
+        <!-- Stopka: wolne miejsca + przycisk zapisu -->
+        <div class="panel-detali-stopka">
+          <span class="panel-detali-miejsca" hidden></span>
+          <button class="btn-akcja panel-detali-btn-akcja" type="button"></button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Prawa kolumna: opis zajęć (widoczna tylko gdy jest opis) -->
+    <div class="panel-detali-prawo" hidden>
+      <p class="panel-detali-opis"></p>
+      <a class="panel-detali-wiecej" href="#">więcej →</a>
+    </div>
+
+  </div>
+</template>

@@ -670,25 +670,16 @@ function renderujPanelDzienny(panelKarty, panelData, terminy, dataStr) {
    ============================================================ */
 function renderujSiatke(terminy) {
   const wrapper = document.getElementById('widok-siatka');
-  if (!wrapper) return;
-  wrapper.innerHTML = '';
+  const grid = document.getElementById('siatka-grid');
+  const panel = document.getElementById('siatka-panel');
+  const tmplKomorka = document.getElementById('tmpl-komorka-siatki');
+  const tmplPasek = document.getElementById('tmpl-pasek-siatki');
+
+  if (!wrapper || !grid || !tmplKomorka || !tmplPasek) return;
+
   wrapper.hidden = false;
-
-  // Nagłówki dni tygodnia
-  const naglowek = document.createElement('div');
-  naglowek.className = 'siatka-naglowek';
-  const dniKolejnosc = ['Pn','Wt','Śr','Czw','Pt','Sb','Nd'];
-  for (const d of dniKolejnosc) {
-    const h = document.createElement('div');
-    h.className = 'siatka-naglowek-dzien';
-    h.textContent = d;
-    naglowek.appendChild(h);
-  }
-  wrapper.appendChild(naglowek);
-
-  // Siatka komórek
-  const grid = document.createElement('div');
-  grid.className = 'siatka-grid';
+  grid.innerHTML = '';
+  if (panel) { panel.innerHTML = ''; panel.hidden = true; }
 
   const pierwszyDzien = new Date(aktualnyRok, aktualnyMiesiac - 1, 1);
   const ostatniDzien = new Date(aktualnyRok, aktualnyMiesiac, 0).getDate();
@@ -704,9 +695,9 @@ function renderujSiatke(terminy) {
     terminyPerDzien[t.data].push(t);
   }
 
-  // Panel detali
-  const panel = document.createElement('div');
-  panel.className = 'siatka-panel-detali';
+  // Sprawdź czy jakikolwiek dzień ma więcej niż jedno zajęcie
+  const maWieleDni = Object.values(terminyPerDzien).some(t => t.length > 1);
+  grid.classList.toggle('siatka-male-cyfry', maWieleDni);
 
   // Puste komórki przed pierwszym dniem
   for (let i = 0; i < startOffset; i++) {
@@ -715,98 +706,152 @@ function renderujSiatke(terminy) {
     grid.appendChild(pusta);
   }
 
+  let aktywnaKomorka = null;
+
   for (let d = 1; d <= ostatniDzien; d++) {
     const dataStr = `${aktualnyRok}-${String(aktualnyMiesiac).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     const termineDnia = terminyPerDzien[dataStr] ?? [];
 
-    const komorka = document.createElement('div');
-    komorka.className = 'siatka-komorka' + (dataStr === dzisiajStr ? ' dzisiaj' : '');
+    // Klonuj template komórki
+    const komorka = tmplKomorka.content.cloneNode(true).querySelector('.siatka-komorka');
+    komorka.dataset.data = dataStr;
+    komorka.classList.toggle('dzisiaj', dataStr === dzisiajStr);
+    komorka.classList.toggle('inny-miesiac', false);
 
-    const numEl = document.createElement('div');
-    numEl.className = 'siatka-dzien-num';
-    numEl.textContent = d;
-    komorka.appendChild(numEl);
-
-    if (termineDnia.length === 1) {
-      komorka.classList.add('ma-jedno-zajecie');
-      komorka.addEventListener('click', () => pokazPanelSiatki(panel, termineDnia[0]));
-    }
+    komorka.querySelector('.siatka-dzien-num').textContent = d;
 
     if (termineDnia.length > 0) {
-      const paski = document.createElement('div');
-      paski.className = 'siatka-paski';
+      const paskiEl = komorka.querySelector('.siatka-paski');
 
       for (const termin of termineDnia) {
         const nazwaInfo = pobierzNazwe(termin.slug);
         const tekst = nazwaInfo.nazwa_skrocona || nazwaInfo.nazwa;
-        const pasek = document.createElement('div');
-        pasek.className = 'siatka-pasek';
+
+        const pasek = tmplPasek.content.cloneNode(true).querySelector('.siatka-pasek');
+        pasek.dataset.terminId = termin.id;
         pasek.style.background = termin.kategoriaKolor || 'var(--accent-color)';
-        pasek.textContent = tekst;
+        pasek.querySelector('.siatka-pasek-tekst').textContent = tekst;
 
-        if (termineDnia.length > 1) {
-          pasek.addEventListener('click', (e) => {
-            e.stopPropagation();
-            pokazPanelSiatki(panel, termin);
-          });
-        }
+        pasek.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (aktywnaKomorka) aktywnaKomorka.classList.remove('aktywna');
+          komorka.classList.add('aktywna');
+          aktywnaKomorka = komorka;
+          pokazPanelSiatki(panel, termin);
+        });
 
-        paski.appendChild(pasek);
+        paskiEl.appendChild(pasek);
       }
-      komorka.appendChild(paski);
+
+      // Kliknięcie w komórkę gdy jedno zajęcie
+      if (termineDnia.length === 1) {
+        komorka.classList.add('ma-jedno-zajecie');
+        komorka.addEventListener('click', () => {
+          if (aktywnaKomorka) aktywnaKomorka.classList.remove('aktywna');
+          komorka.classList.add('aktywna');
+          aktywnaKomorka = komorka;
+          pokazPanelSiatki(panel, termineDnia[0]);
+        });
+      }
     }
 
     grid.appendChild(komorka);
   }
-
-  wrapper.appendChild(grid);
-  wrapper.appendChild(panel);
 }
 
-function pokazPanelSiatki(panel, termin) {
+function pokazPanelSiatki(panelEl, termin) {
+  const tmpl = document.getElementById('tmpl-panel-detali');
+  if (!tmpl || !panelEl) return;
+
+  panelEl.innerHTML = '';
+  panelEl.hidden = false;
+
+  const panel = tmpl.content.cloneNode(true).querySelector('.panel-detali');
+
   const nazwaInfo = pobierzNazwe(termin.slug);
   const adres = termin.miejsceNazwa || 'ul. Starowiślna 20/5, Kraków';
+  const opisInfo = window.ZAJECIA_OPISY?.[termin.slug];
+  const maOpis = opisInfo?.opis && opisInfo.opis.trim().length > 0;
 
-  panel.className = 'siatka-panel-detali widoczny';
-  panel.innerHTML = '';
+  // Pasek koloru
+  panel.querySelector('.panel-detali-pasek').style.background =
+    termin.kategoriaKolor || 'var(--accent-secondary-color)';
 
-  const pNazwa = document.createElement('h3');
-  pNazwa.className = 'siatka-panel-nazwa';
-  pNazwa.textContent = nazwaInfo.nazwa;
-  panel.appendChild(pNazwa);
+  // Badge
+  const badge = panel.querySelector('.panel-detali-badge');
+  badge.textContent = termin.kategoriaNazwa || '';
+  if (termin.kategoriaKolor) {
+    badge.style.background = termin.kategoriaKolor + '22';
+    badge.style.color = termin.kategoriaKolor;
+  }
 
-  const pData = document.createElement('div');
-  pData.className = 'siatka-panel-info';
-  pData.textContent = formatujDate(termin.data) + ', ' + (termin.godzinaStart || '') + (termin.godzinaKoniec ? '–' + termin.godzinaKoniec : '');
-  panel.appendChild(pData);
+  // Data
+  panel.querySelector('.panel-detali-data').textContent = formatujDate(termin.data);
 
-  const pAdres = document.createElement('div');
-  pAdres.className = 'siatka-panel-info';
-  pAdres.textContent = adres;
-  panel.appendChild(pAdres);
+  // Nazwa
+  panel.querySelector('.panel-detali-nazwa').textContent = nazwaInfo.nazwa;
 
+  // Godzina
+  const godz = (termin.godzinaStart || '') + (termin.godzinaKoniec ? '–' + termin.godzinaKoniec : '');
+  panel.querySelector('.panel-detali-godzina').textContent = godz;
+
+  // Adres
+  panel.querySelector('.panel-detali-miejsce').textContent = adres;
+
+  // Prowadzący
+  const prowWiersz = panel.querySelector('.panel-detali-prowadzacy-wiersz');
   if (termin.prowadzacy?.length) {
-    const pProw = document.createElement('div');
-    pProw.className = 'siatka-panel-info';
-    pProw.textContent = termin.prowadzacy.join(', ');
-    panel.appendChild(pProw);
+    prowWiersz.hidden = false;
+    prowWiersz.querySelector('.panel-detali-prowadzacy').textContent = termin.prowadzacy.join(', ');
   }
 
+  // Odwołane
+  const odwInfo = panel.querySelector('.panel-detali-odwolane-info');
   if (termin.odwolane) {
-    const pOdw = document.createElement('div');
-    pOdw.style.cssText = 'color:var(--error-color);font-size:0.85rem;font-weight:600;margin-top:4px';
-    pOdw.textContent = 'Odwołane';
-    panel.appendChild(pOdw);
+    odwInfo.hidden = false;
+    if (termin.powodOdwolania) {
+      odwInfo.querySelector('.panel-detali-odwolane-tekst').textContent = 'Odwołane — ' + termin.powodOdwolania;
+    }
   }
 
-  const pStopka = document.createElement('div');
-  pStopka.className = 'siatka-panel-stopka';
-  pStopka.appendChild(tworzBtnInfo(termin));
-  const btnAkcji = tworzBtnAkcji(termin);
-  if (btnAkcji) pStopka.appendChild(btnAkcji);
-  panel.appendChild(pStopka);
+  // Wolne miejsca
+  const miejscaEl = panel.querySelector('.panel-detali-miejsca');
+  const infoMiejsca = obliczInfoMiejsca(termin);
+  if (infoMiejsca) {
+    miejscaEl.textContent = infoMiejsca;
+    miejscaEl.hidden = false;
+  }
 
-  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  // Przycisk akcji (tylko "Zapisz się" — bez "Informacje")
+  const btnAkcja = panel.querySelector('.panel-detali-btn-akcja');
+  ustawPrzyciskAkcji(btnAkcja, termin);
+
+  // Prawa kolumna: opis
+  const prawo = panel.querySelector('.panel-detali-prawo');
+  if (maOpis && termin.slug) {
+    // Skróć opis do ~300 znaków
+    const pelnyOpis = opisInfo.opis.trim();
+    const skrocony = pelnyOpis.length > 300
+      ? pelnyOpis.slice(0, 300).replace(/\s+\S*$/, '') + '...'
+      : pelnyOpis;
+
+    panel.querySelector('.panel-detali-opis').textContent = skrocony;
+
+    const linkWiecej = panel.querySelector('.panel-detali-wiecej');
+    linkWiecej.href = '/' + termin.slug + '/';
+    if (pelnyOpis.length > 300) {
+      linkWiecej.textContent = 'więcej →';
+    } else {
+      linkWiecej.textContent = 'strona zajęć →';
+    }
+
+    // Lewa kolumna węższa gdy jest opis
+    panel.querySelector('.panel-detali-lewo').classList.add('z-opisem');
+    prawo.hidden = false;
+  }
+
+  panelEl.appendChild(panel);
+  panelEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 /* ============================================================
