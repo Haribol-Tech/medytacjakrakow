@@ -690,16 +690,14 @@
   color: var(--white-color);
   background: transparent;
   border-radius: 0;
-  width: auto;
-  height: auto;
 }
 
 .siatka-dzien-num {
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--primary-color);
   margin-bottom: 4px;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -761,7 +759,7 @@
 }
 
 .panel-detali-lewo.z-opisem {
-  flex: 0 0 40%;
+  flex: 0 0 55%;
 }
 
 .panel-detali-pasek {
@@ -898,7 +896,7 @@
   color: var(--accent-color);
   text-decoration: none;
   font-weight: 500;
-  align-self: flex-start;
+  align-self: flex-end;
   transition: opacity 0.2s;
 }
 
