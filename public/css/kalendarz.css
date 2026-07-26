@@ -683,11 +683,11 @@
 
 /* Aktywna (kliknięta) komórka */
 .siatka-komorka.aktywna {
-  background: var(--accent-color) !important;
+  background: #3D493A15 !important;
 }
 
 .siatka-komorka.aktywna .siatka-dzien-num {
-  color: var(--white-color);
+  color: var(--primary-color);
   background: transparent;
   border-radius: 0;
 }
