@@ -674,8 +674,8 @@
   background: var(--accent-color);
   color: var(--white-color);
   border-radius: 50%;
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -818,6 +818,7 @@
   align-items: center;
   gap: 4px 14px;
   margin-bottom: 10px;
+  min-height: 44px; /* Stała wysokość — dwie linie szczegółów */
 }
 
 .panel-detali-wiersz {
